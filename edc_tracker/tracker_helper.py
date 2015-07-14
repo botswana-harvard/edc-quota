@@ -5,8 +5,7 @@ from django.core.exceptions import ImproperlyConfigured
 
 # from edc.device.device.classes import Device
 
-from ..models import Tracker, SiteTracker
-from .mail import Reciever, Mail
+from models import Tracker, SiteTracker
 
 
 class Device(object):
@@ -18,11 +17,11 @@ class TrackerHelper(object):
     """Calculates and updates tracked value.
     """
 
-    def __init__(self, device_id, central_server_name, plot=None, household_structure=None):
+    def __init__(self):
         """Sets value_type, and tracker server name."""
 
         self.value_type = None
-        self.central_server_name = central_server_name
+        self.central_server_name = None
         self.tracked_model = None
 
     def update_site_tracker(self):
@@ -88,7 +87,7 @@ class TrackerHelper(object):
 
         Attributes:
         using: The using value for the database in the producer.
-        value_type: The type of value being tracked, e.g mobile setup or household setup for poc vl.
+        value_type: The type of value being tracked.
         central_server_name: The name of the central site
         """
 
@@ -96,7 +95,7 @@ class TrackerHelper(object):
         online_sites = self.online_producers
         if Device().is_community_server:
             for using in online_sites:
-                if not using in settings.MIDDLE_MAN_LIST:
+                if using not in settings.MIDDLE_MAN_LIST:
                     # Update tracker
                     try:
                         tracker = Tracker.objects.get(
@@ -123,10 +122,12 @@ class TrackerHelper(object):
                     # Update site tracker
                     try:
                         site_tracker = SiteTracker.objects.get(site_name=site)
-                        site_tracker.tracked_value = self.site_tracked_value(site)
+                        site_tracker.tracked_value = self.site_tracked_value(
+                                                            site
+                                                        )
                         site_tracker.update_date = datetime.today()
                         site_tracker.save(
-                            update_fields=['tracked_value', 'update_date'], 
+                            update_fields=['tracked_value', 'update_date'],
                             using=using
                         )
                     except SiteTracker.DoesNotExist:
@@ -269,9 +270,3 @@ class TrackerHelper(object):
         tracked_dict['req_pimavl'] = TrackerHelper().required_pimavl
         tracked_dict['color_status'] = req_color
         return tracked_dict
-
-    def send_email_notification(self):
-        if Device().is_central_server:
-            if self.tracked_value >= 300:
-                mail = Mail(receiver=Reciever())
-                mail.send_mail_with_cc_or_bcc()
