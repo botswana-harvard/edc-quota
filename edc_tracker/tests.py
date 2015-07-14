@@ -1,7 +1,7 @@
 from django.test import TestCase
 
-from ..classes import TrackerHelper
-from ..models import Tracker, SiteTracker
+from .classes import TrackerHelper
+from .models import Tracker, SiteTracker
 
 
 class TestTracker(TestCase):
@@ -14,6 +14,6 @@ class TestTracker(TestCase):
 
     def test_central_community_tracker(self):
 
-        tracker = TrackerHelper()
+        tracker = TrackerHelper(22, 'coulson')
         tracker.update_central_tracker()
         self.assertEqual(1, Tracker.objects.all().count())

@@ -3,21 +3,26 @@ from datetime import datetime
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 
-from edc.device.device.classes import Device
+# from edc.device.device.classes import Device
 
 from ..models import Tracker, SiteTracker
 from .mail import Reciever, Mail
+
+
+class Device(object):
+
+    is_central_server = False
 
 
 class TrackerHelper(object):
     """Calculates and updates tracked value.
     """
 
-    def __init__(self, plot=None, household_structure=None):
+    def __init__(self, device_id, central_server_name, plot=None, household_structure=None):
         """Sets value_type, and tracker server name."""
 
         self.value_type = None
-        self.central_server_name = settings.TRACKER_SERVER_NAME
+        self.central_server_name = central_server_name
         self.tracked_model = None
 
     def update_site_tracker(self):

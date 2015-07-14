@@ -1,14 +1,12 @@
 from django.db import models
 
-from edc.base.model.models import BaseModel
 
-
-class Tracker(BaseModel):
+class Tracker(models.Model):
 
     update_date = models.DateTimeField(
-         verbose_name='Start Date/Time',
-         null=True
-        )
+        verbose_name='Start Date/Time',
+        null=True
+    )
 
     is_active = models.BooleanField(
         default=True,
@@ -17,22 +15,22 @@ class Tracker(BaseModel):
     central_server_name = models.CharField(
         max_length=100,
         help_text=("The name of the central server name, e.g central.")
-        )
+    )
 
     value_type = models.CharField(
         max_length=100,
         help_text=("Type of the value being tracked.")
-        )
+    )
 
     app_name = models.CharField(
         max_length=100,
         help_text=("App name of the value being tracked.")
-        )
+    )
 
     model = models.CharField(
         max_length=150,
         help_text=("Model being tracked.")
-        )
+    )
 
     tracked_value = models.IntegerField(
         default=0,
@@ -47,38 +45,41 @@ class Tracker(BaseModel):
     )
 
     start_date = models.DateTimeField(
-         verbose_name='Start Date/Time',
-         null=True
-        )
+        verbose_name='Start Date/Time',
+        null=True
+    )
 
     end_date = models.DateTimeField(
         verbose_name='End Date/Time',
         null=True
-        )
+    )
+
+    def __str__(self):
+        return "{}_{}".format(self.name, self.value_type)
 
     def __unicode__(self):
         return "{}_{}".format(self.name, self.value_type)
 
     class Meta:
-        app_label = 'tracking'
+        app_label = 'edc_tracker'
 
 
-class SiteTracker(BaseModel):
+class SiteTracker(models.Model):
 
     tracker = models.ForeignKey(Tracker)
 
     update_date = models.DateTimeField(
-         verbose_name='Start Date/Time',
-         null=True
-        )
+        verbose_name='Start Date/Time',
+        null=True
+    )
 
     app_name = models.CharField(
         max_length=100,
-        )
+    )
 
     model = models.CharField(
         max_length=150,
-        )
+    )
 
     tracked_value = models.IntegerField(
         default=0,
@@ -87,21 +88,24 @@ class SiteTracker(BaseModel):
 
     site_name = models.CharField(
         max_length=200,
-        )
+    )
 
     start_date = models.DateTimeField(
-         verbose_name='Start Date/Time',
-         null=True
-        )
+        verbose_name='Start Date/Time',
+        null=True
+    )
 
     end_date = models.DateTimeField(
         verbose_name='End Date/Time',
         null=True
-        )
+    )
+
+    def __str__(self):
+        return "{}_{}".format(self.model, self.tracker.value_type)
 
     def __unicode__(self):
         return "{}_{}".format(self.model, self.tracker.value_type)
 
     class Meta:
-        app_label = 'tracking'
+        app_label = 'edc_tracker'
         unique_together = (('site_name', 'tracker'),)

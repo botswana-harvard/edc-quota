@@ -1,7 +1,12 @@
 from django.contrib import admin
-from edc.base.modeladmin.admin import BaseModelAdmin
-from ..models import Tracker, SiteTracker
+# from edc.base.modeladmin.admin import BaseModelAdmin
+
 from ..forms import SiteTrackerForm, TrackerForm
+from ..models import Tracker, SiteTracker
+
+
+class BaseModelAdmin(admin.ModelAdmin):
+    pass
 
 
 class SiteTrackerAdmin(BaseModelAdmin):

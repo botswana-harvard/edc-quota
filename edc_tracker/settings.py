@@ -38,9 +38,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'getresults',
-    'getresults_receive',
-    'getresults_aliquot',
+    'edc_tracker',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -54,7 +52,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.security.SecurityMiddleware',
 )
 
-ROOT_URLCONF = 'getresults_aliquot.urls'
+ROOT_URLCONF = 'edc_tracker.urls'
 
 TEMPLATES = [
     {
@@ -72,7 +70,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'getresults_aliquot.wsgi.application'
+WSGI_APPLICATION = 'edc_tracker.wsgi.application'
 
 
 # Database
@@ -106,8 +104,4 @@ STATIC_URL = '/static/'
 
 GIT_DIR = BASE_DIR.ancestor(1)
 
-RECEIVE_IDENTIFIER_SEED = ('AAA', '0000')
-RECEIVE_IDENTIFIER_ALPHA_PATTERN = r'^[A-Z]{3}$'
-RECEIVE_IDENTIFIER_NUMERIC_PATTERN = r'^[0-9]{4}$'
-
-ALIQUOT_IDENTIFIER_PREFIX_PATTERN = RECEIVE_IDENTIFIER_ALPHA_PATTERN[1:-1] + RECEIVE_IDENTIFIER_NUMERIC_PATTERN[1:-1]
+TRACKER_SERVER_NAME = 'coulson'
