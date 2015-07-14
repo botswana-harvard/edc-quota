@@ -10,23 +10,22 @@ with open(os.path.join(os.path.dirname(__file__), 'README.md')) as readme:
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
-    name='getresults-aliquot',
+    name='edc-tracker',
     version='0.1.0dev0',
     author=u'Erik van Widenfelt',
     author_email='ew2789@gmail.com',
     packages=find_packages(),
     include_package_data=True,
-    url='http://github/botswana-harvard/getresults-aliquot',
+    url='http://github/botswana-harvard/edc-tracker',
     license='GPL license, see LICENSE',
-    description='getresults aliquot models and processes',
+    description='track values for enrollment cap, etc',
     long_description=README,
     zip_safe=False,
-    keywords='django getresults lis lims aliquot',
+    keywords='django edc track enrollment',
     install_requires=[
-        'Django>=1.8',
+        'Django>=1.6',
         'django-extensions>=1.5.5',
         'unipath>=1.1',
-        'django-simple-history',
     ],
     classifiers=[
         'Environment :: Web Environment',
