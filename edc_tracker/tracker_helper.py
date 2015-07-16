@@ -1,5 +1,5 @@
-import requests
-import json
+# import requests
+# import json
 
 from datetime import datetime
 
@@ -45,14 +45,16 @@ class TrackerHelper(object):
     def update_remote_tracker(self):
         """Update a remote tracker."""
 
-        tracker_data = self.tracker()
-        requests.post(self.url, data=json.dumps(tracker_data), self.auth)
+        pass
+#        tracker_data = self.tracker()
+#        requests.post(self.url, data=json.dumps(tracker_data), self.auth)
 
     def update_site_tracker(self):
         """Update site tracker."""
 
-        site_tracker_data = self.site_tracker()
-        requests.post(self.url, data=json.dumps(site_tracker_data), self.auth)
+        pass
+#        site_tracker_data = self.site_tracker()
+#        requests.post(self.url, data=json.dumps(site_tracker_data), self.auth)
 
     def tracker(self):
         """Returns a tracker."""
