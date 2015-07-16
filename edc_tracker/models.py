@@ -12,7 +12,7 @@ class Tracker(models.Model):
         default=True,
         help_text=("Is the tracker active."))
 
-    central_server_name = models.CharField(
+    master_server_name = models.CharField(
         max_length=100,
         help_text=("The name of the central server name, e.g central.")
     )

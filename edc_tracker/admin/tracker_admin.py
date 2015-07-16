@@ -57,13 +57,12 @@ class TrackerAdmin(BaseModelAdmin):
     form = TrackerForm
     instructions = []
     inlines = [SiteTrackerInline, ]
-    date_hierarchy = 'modified'
     list_per_page = 15
     list_display = (
         'end_date',
         'start_date',
         'tracked_value',
-        'name',
+        'master_server_name',
         'model',
         'app_name',
         'update_date',
