@@ -1,6 +1,8 @@
 from django.views.generic import View
 from django.shortcuts import render
 
+from models import Tracker, SiteTracker
+
 
 class TrackerView(View):
 
@@ -10,6 +12,13 @@ class TrackerView(View):
 
     def post(self, request, *args, **kwargs):
         """Allows a POST -- without the class returns a 405 error."""
+
+        tracker_data = request.POST('tracker_data')
+        site_tracker_data = request.POST('site_tracker_data')
+        tracker = Tracker(**tracker_data)
+        tracker.save()
+        site_tracker = SiteTracker(**site_tracker_data)
+        site_tracker.save()
         return render(
                     request,
                     self.template_name,

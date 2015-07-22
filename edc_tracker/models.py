@@ -55,10 +55,7 @@ class Tracker(models.Model):
     )
 
     def __str__(self):
-        return "{}_{}".format(self.name, self.value_type)
-
-    def __unicode__(self):
-        return "{}_{}".format(self.name, self.value_type)
+        return "{}_{}".format(self.master_server_name, self.value_type)
 
     class Meta:
         app_label = 'edc_tracker'
@@ -101,9 +98,6 @@ class SiteTracker(models.Model):
     )
 
     def __str__(self):
-        return "{}_{}".format(self.model, self.tracker.value_type)
-
-    def __unicode__(self):
         return "{}_{}".format(self.model, self.tracker.value_type)
 
     class Meta:

@@ -15,8 +15,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.conf.urls import include, url
+from views import TrackerView
 
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
+    url(r'^tracker/', TrackerView.as_view(), name='tracker_url'),
+    url(r'^site_tracker/', TrackerView.as_view(), name='site_tracker_url')
 ]

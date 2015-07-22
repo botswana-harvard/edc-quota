@@ -1,5 +1,5 @@
-# import requests
-# import json
+import requests
+import json
 
 from datetime import datetime
 
@@ -20,6 +20,7 @@ class TrackerHelper(object):
         self.model_filter_value = None
         self.master_server_name = None
         self.tracked_model = None
+        self.app_label = None
         self.site_name = None
         self.url = None
         self.auth = None
@@ -45,16 +46,15 @@ class TrackerHelper(object):
     def update_remote_tracker(self):
         """Update a remote tracker."""
 
-        pass
-#        tracker_data = self.tracker()
-#        requests.post(self.url, data=json.dumps(tracker_data), self.auth)
+        tracker_data = self.tracker()
+        requests.post(self.url, data=json.dumps(tracker_data))
 
     def update_site_tracker(self):
         """Update site tracker."""
 
-        pass
-#        site_tracker_data = self.site_tracker()
-#        requests.post(self.url, data=json.dumps(site_tracker_data), self.auth)
+        site_tracker_data = self.site_tracker()
+        requests.post(self.url, data=json.dumps(site_tracker_data))
+#         print(r.status_code, r.reason)
 
     def tracker(self):
         """Returns a tracker."""
@@ -68,7 +68,7 @@ class TrackerHelper(object):
                 tracked_value=self.master_tracked_value(),
                 master_server_name=self.master_server_name,
                 model=self.tracked_model,
-                app_name=self.tracked_model._meta.app_label,
+                app_name=self.app_label,
                 update_date=datetime.today(),
                 value_limit=self.value_limit
             )
@@ -91,7 +91,7 @@ class TrackerHelper(object):
                 tracked_value=self.site_tracked_value(),
                 site_name=self.site_name,
                 model=self.tracked_model,
-                app_name=self.tracked_model._meta.app_label,
+                app_name=self.app_label,
                 update_date=datetime.today(),
                 tracker=self.tracker(),
                 value_limit=self.value_limit
