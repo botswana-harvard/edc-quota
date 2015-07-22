@@ -36,13 +36,13 @@ class SiteTrackerAdmin(BaseModelAdmin):
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "tracker":
             kwargs["queryset"] = Tracker.objects.filter(
-                                    id__exact=request.GET.get('tracker', 0)
-                                )
+                id__exact=request.GET.get('tracker', 0)
+            )
         return super(SiteTrackerAdmin, self).formfield_for_foreignkey(
-                                                db_field,
-                                                request,
-                                                **kwargs
-                                            )
+            db_field,
+            request,
+            **kwargs
+        )
 
 admin.site.register(SiteTracker, SiteTrackerAdmin)
 

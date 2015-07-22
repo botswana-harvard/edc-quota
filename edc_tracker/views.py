@@ -20,15 +20,15 @@ class TrackerView(View):
         site_tracker = SiteTracker(**site_tracker_data)
         site_tracker.save()
         return render(
-                    request,
-                    self.template_name,
-                    self.get_context_data(**kwargs)
-                )
+            request,
+            self.template_name,
+            self.get_context_data(**kwargs)
+        )
 
     def get(self, request, *args, **kwargs):
         """Allows a GET -- without the class returns a 405 error."""
         return render(
-                    request,
-                    self.template_name,
-                    self.get_context_data(**kwargs)
-                )
+            request,
+            self.template_name,
+            self.get_context_data(**kwargs)
+        )
