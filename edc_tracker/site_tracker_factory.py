@@ -11,9 +11,8 @@ class SiteTrackerFactory(factory.DjangoModelFactory):
 
     start_date = datetime.today()
     tracked_value = 0
-    site_name = 'mmandunyane'
-    model = 'TestModel'
-    app_name = 'app_label'
+    site_name = 'gaborone'
+    model = SiteTracker
+    app_name = 'edc_tracker'
     update_date = datetime.today()
     tracker = TrackerFactory()
-    value_limit = 400
