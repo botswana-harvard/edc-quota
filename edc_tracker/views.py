@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.views.generic import View
 from django.shortcuts import render
 
@@ -13,12 +15,29 @@ class TrackerView(View):
     def post(self, request, *args, **kwargs):
         """Allows a POST -- without the class returns a 405 error."""
 
-        tracker_data = request.POST('tracker_data')
+        # Update tracker
+        tracker_data = request.POST('tracker_dict')
+        tracker = Tracker.objects.get(
+            value_type=tracker_data['value_type'],
+            master_server_name=tracker_data['master_server_name']
+        )
+        tracker.tracked_value = tracker_data['tracked_value']
+        tracker.update_date = datetime.today()
+        tracker.save(update_fields=['tracked_value', 'update_date'])
+
+        # Update site_tracker
         site_tracker_data = request.POST('site_tracker_data')
-        tracker = Tracker(**tracker_data)
-        tracker.save()
-        site_tracker = SiteTracker(**site_tracker_data)
-        site_tracker.save()
+        tracker = Tracker.objects.get(
+            value_type=site_tracker_data['value_type'],
+            master_server_name=site_tracker_data['master_server_name']
+        )
+        site_tracker = SiteTracker.objects.get(
+            site_name=site_tracker_data['site_name'],
+            tracker=tracker
+        )
+        site_tracker.tracked_value = site_tracker_data['tracked_value']
+        site_tracker.update_date = datetime.today()
+        site_tracker.save(update_fields=['tracked_value', 'update_date'])
         return render(
             request,
             self.template_name,

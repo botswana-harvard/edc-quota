@@ -47,18 +47,47 @@ class TrackerHelper(object):
         ).count()
         return site_tracked_value
 
-    def update_remote_tracker(self):
-        """Update a remote tracker."""
-
-        tracker_data = self.tracker()
-        requests.post(self.url, data=json.dumps(tracker_data))
+    def update_master_tracker(self):
+        """Update the tracker on the master server."""
+        tracker = self.tracker()
+        tracker.tracked_value = self.master_tracked_value()
+        tracker.update_date = datetime.today()
+        tracker.save(update_fields=['tracked_value', 'update_date'])
 
     def update_site_tracker(self):
-        """Update site tracker."""
+        """Update the site tracker on the master server or site server."""
+        site_tracker = self.site_tracker()
+        site_tracker.tracked_value = self.site_tracked_value()
+        site_tracker.update_date = datetime.today()
+        site_tracker.save(update_fields=['tracked_value', 'update_date'])
 
-        site_tracker_data = self.site_tracker()
-        requests.post(self.url, data=json.dumps(site_tracker_data))
-#         print(r.status_code, r.reason)
+    def update_remote_tracker(self):
+        """Update a remote tracker from the master server."""
+
+        self.update_master_tracker()
+        tracker = self.tracker()
+        tracker_dict = {
+            'tracked_value': tracker.tracked_value,
+            'value_type': tracker.value_type,
+            'master_server_name': tracker.master_server_name
+        }
+        requests.post(self.url, data=json.dumps(tracker_dict))
+
+    def update_remote_site_tracker(self):
+        """Update a remote site tracker."""
+
+        self.update_site_tracker()
+        site_tracker = self.site_tracker()
+        value_type = site_tracker.tracker.value_type
+        master_server_name = site_tracker.tracker.master_server_name
+        site_tracker_dict = {
+            'tracked_value': site_tracker.tracked_value,
+            'site_name': site_tracker.site_name,
+            'tracker': site_tracker.tracker,
+            'value_type': value_type,
+            'master_server_name': master_server_name
+        }
+        requests.post(self.url, data=json.dumps(site_tracker_dict))
 
     def tracker(self):
         """Returns a tracker."""
