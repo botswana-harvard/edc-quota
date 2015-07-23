@@ -18,6 +18,7 @@ class TrackerHelper(object):
         self.tracked_model = None
         self.app_label = None
         self.site_name = None
+        self.value_type = None
         self.url = None
         self.auth = None
         self.value_limit = None
@@ -63,7 +64,8 @@ class TrackerHelper(object):
         """Returns a tracker."""
         try:
             tracker = Tracker.objects.get(
-                master_server_name=self.master_server_name
+                master_server_name=self.master_server_name,
+                value_type=self.value_type,
             )
         except Tracker.DoesNotExist:
             Tracker.objects.create(
@@ -72,6 +74,7 @@ class TrackerHelper(object):
                 master_server_name=self.master_server_name,
                 model=self.tracked_model,
                 app_name=self.app_label,
+                value_type=self.value_type,
                 update_date=datetime.today(),
                 value_limit=self.value_limit
             )
