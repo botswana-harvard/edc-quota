@@ -108,7 +108,8 @@ class TrackerHelper(object):
                 value_limit=self.value_limit
             )
             tracker = Tracker.objects.get(
-                master_server_name=self.master_server_name
+                master_server_name=self.master_server_name,
+                value_type=self.value_type
             )
         return tracker
 
