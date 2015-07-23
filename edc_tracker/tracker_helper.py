@@ -6,6 +6,7 @@ from datetime import datetime
 from django.db.models import Q
 
 from models import Tracker, SiteTracker
+from django.core.exceptions import ImproperlyConfigured
 
 
 class TrackerHelper(object):
@@ -28,7 +29,8 @@ class TrackerHelper(object):
 
     def master_tracked_value(self):
         """Returns the total number of instances of a tracked model"""
-
+#         if not (self.model_filter_field_attr and self.model_filter_value):
+#             raise ImproperlyConfigured("Specify class attributes, {0} and {1}.".format())
         tracked_value = self.tracked_model.objects.filter(
             Q(**{self.model_filter_field_attr: self.model_filter_value})
         ).count()
@@ -84,7 +86,6 @@ class TrackerHelper(object):
                 Q(**{self.model_site_field_attr: self.site_name}),
                 tracker=self.tracker()
             )
-            SiteTracker.objects.filter(tracker='')
         except SiteTracker.DoesNotExist:
             SiteTracker.objects.create(
                 start_date=datetime.today(),
@@ -93,8 +94,7 @@ class TrackerHelper(object):
                 model=self.tracked_model,
                 app_name=self.app_label,
                 update_date=datetime.today(),
-                tracker=self.tracker(),
-                value_limit=self.value_limit
+                tracker=self.tracker()
             )
             site_tracker = SiteTracker.objects.get(
                 Q(**{self.model_site_field_attr: self.site_name}),

@@ -32,10 +32,10 @@ class TestTracker(TestCase):
         tracker_helper.app_label = 'edc_tracker'
         tracker_helper.master_server_name = 'central'
         tracker_helper.site_name = 'gaborone'
-        tracker_helper.model_filter_field_attr = 'master_server_name'
-        tracker_helper.model_filter_value = 'central'
-        tracker_helper.model_site_field_attr = 'gaborone'
-        tracker_helper.tracked_model = Tracker
+        tracker_helper.model_filter_field_attr = 'app_name'
+        tracker_helper.model_filter_value = 'edc_tracker'
+        tracker_helper.model_site_field_attr = 'site_name'
+        tracker_helper.tracked_model = SiteTracker
         tracker_helper.url = 'http://localhost:8000/tracker/'
         tracker_helper.value_limit = 400
         tracker_helper.tracked_value = 0
