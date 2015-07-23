@@ -1,15 +1,10 @@
 from django.contrib import admin
-# from edc.base.modeladmin.admin import BaseModelAdmin
 
 from ..forms import SiteTrackerForm, TrackerForm
 from ..models import Tracker, SiteTracker
 
 
-class BaseModelAdmin(admin.ModelAdmin):
-    pass
-
-
-class SiteTrackerAdmin(BaseModelAdmin):
+class SiteTrackerAdmin(admin.ModelAdmin):
     form = SiteTrackerForm
     fields = (
         'end_date',
@@ -53,7 +48,7 @@ class SiteTrackerInline(admin.TabularInline):
     max_num = 5
 
 
-class TrackerAdmin(BaseModelAdmin):
+class TrackerAdmin(admin.ModelAdmin):
     form = TrackerForm
     instructions = []
     inlines = [SiteTrackerInline, ]

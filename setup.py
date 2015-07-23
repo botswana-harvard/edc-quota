@@ -12,7 +12,7 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 setup(
     name='edc-tracker',
     version='0.1.0dev0',
-    author=u'Coulson Kgathi',
+    author=u'Coulson Thabo Kgathi',
     author_email='ew2789@gmail.com',
     packages=find_packages(),
     include_package_data=True,
