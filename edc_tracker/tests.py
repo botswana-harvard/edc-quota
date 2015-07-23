@@ -43,3 +43,10 @@ class TestTracker(TestCase):
         tracker_helper.site_tracker()
         site_trackers = SiteTracker.objects.all()
         self.assertEqual(site_trackers.count(), 1)
+
+    def test_master_tracked_value(self):
+        tracker_helper = TrackerHelper()
+        tracker_helper.model_filter_field_attr
+        tracker_helper.model_filter_value
+        tracker_helper.tracked_model = SiteTracker
+        tracker_value = tracker_helper.master_tracked_value()

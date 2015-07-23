@@ -3,8 +3,6 @@ import json
 
 from datetime import datetime
 
-from django.db.models import Q
-
 from models import Tracker, SiteTracker
 from django.core.exceptions import ImproperlyConfigured
 
@@ -16,9 +14,6 @@ class TrackerHelper(object):
     def __init__(self):
         """Sets value_type, and tracker server name."""
 
-        self.model_filter_field_attr = None
-        self.model_site_field_attr = None
-        self.model_filter_value = None
         self.master_server_name = None
         self.tracked_model = None
         self.app_label = None
@@ -26,22 +21,28 @@ class TrackerHelper(object):
         self.url = None
         self.auth = None
         self.value_limit = None
+        self.master_filter_dict = {}
+        self.site_filter_dict = {}
 
     def master_tracked_value(self):
         """Returns the total number of instances of a tracked model"""
-#         if not (self.model_filter_field_attr and self.model_filter_value):
-#             raise ImproperlyConfigured("Specify class attributes, {0} and {1}.".format())
+        if not self.master_filter_dict:
+            raise ImproperlyConfigured(
+                'Specify the class master_filter_dict attributes.'
+            )
         tracked_value = self.tracked_model.objects.filter(
-            Q(**{self.model_filter_field_attr: self.model_filter_value})
+            **self.master_filter_dict
         ).count()
         return tracked_value
 
     def site_tracked_value(self):
         """Return the total of instances of site tracked model."""
-
+        if not self.site_filter_dict:
+            raise ImproperlyConfigured(
+                'Specify the class site_filter_dict attributes.'
+            )
         site_tracked_value = self.tracked_model.objects.filter(
-            Q(**{self.model_filter_field_attr: self.model_filter_value,
-                 self.model_site_field_attr: self.site_name}),
+            **self.site_filter_dict
         ).count()
         return site_tracked_value
 
@@ -83,7 +84,7 @@ class TrackerHelper(object):
         """Returns site tracker."""
         try:
             site_tracker = SiteTracker.objects.get(
-                Q(**{self.model_site_field_attr: self.site_name}),
+                site_name=self.site_name,
                 tracker=self.tracker()
             )
         except SiteTracker.DoesNotExist:
@@ -97,7 +98,7 @@ class TrackerHelper(object):
                 tracker=self.tracker()
             )
             site_tracker = SiteTracker.objects.get(
-                Q(**{self.model_site_field_attr: self.site_name}),
+                site_name=self.site_name,
                 tracker=self.tracker()
             )
         return site_tracker
