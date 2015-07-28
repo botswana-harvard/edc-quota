@@ -2,3 +2,5 @@ Django>=1.6
 django-extensions>=1.5.5
 unipath>=1.1
 requests>=2.7.0
+django-tastypie
+factory_boy==2.4.1
