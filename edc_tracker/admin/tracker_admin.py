@@ -57,7 +57,7 @@ class TrackerAdmin(admin.ModelAdmin):
         'end_date',
         'start_date',
         'tracked_value',
-        'master_server_name',
+        'master_server_url',
         'model',
         'app_name',
         'update_date',

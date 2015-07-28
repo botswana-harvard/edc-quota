@@ -11,19 +11,43 @@ class TrackerHelper(object):
     """Calculates and updates tracked value.
     """
 
-    def __init__(self):
+    def __init__(self, request):
         """Sets value_type, and tracker server name."""
 
-        self.master_server_name = None
+        self.master_server_url = None
         self.tracked_model = None
         self.app_label = None
         self.site_name = None
         self.value_type = None
-        self.url = None
         self.auth = None
         self.value_limit = None
         self.master_filter_dict = {}
         self.site_filter_dict = {}
+        try:
+            api_key = request.user.api_key.key
+        except AttributeError as attribute_error:
+            if 'object has no attribute \'api_key\'' in str(attribute_error):
+                raise ValueError(
+                    'ApiKey does not exist for user {}. Check if'
+                    'tastypie was added to installed apps or Perhaps run '
+                    'create_api_key().'.format(self.request.user)
+                )
+            elif 'object has no attribute \'key\'' in str(attribute_error):
+                raise ValueError(
+                    'ApiKey not found for user {}. Perhaps run '
+                    'create_api_key().'.format(self.request.user)
+                )
+            raise
+        except:
+            raise ValueError(
+                'ApiKey not found for user {}. Perhaps run '
+                'create_api_key().'.format(self.request.user,)
+            )
+        self.url_data = {
+            'resource': 'tracker',
+            'username': self.request.user.username,
+            'api_key': api_key
+        }
 
     def master_tracked_value(self):
         """Returns the total number of instances of a tracked model"""
@@ -64,43 +88,38 @@ class TrackerHelper(object):
     def update_remote_tracker(self):
         """Update a remote tracker from the master server."""
 
-        self.update_master_tracker()
-        tracker = self.tracker()
-        tracker_dict = {
-            'tracked_value': tracker.tracked_value,
-            'value_type': tracker.value_type,
-            'master_server_name': tracker.master_server_name
-        }
-        requests.post(self.url, data=json.dumps(tracker_dict))
+        req = requests.get(self.master_server_url, data=self.url_data)
+        print req.text
+        # TODO
 
-    def update_remote_site_tracker(self):
-        """Update a remote site tracker."""
-
-        self.update_site_tracker()
-        site_tracker = self.site_tracker()
-        value_type = site_tracker.tracker.value_type
-        master_server_name = site_tracker.tracker.master_server_name
-        site_tracker_dict = {
-            'tracked_value': site_tracker.tracked_value,
-            'site_name': site_tracker.site_name,
-            'tracker': site_tracker.tracker,
-            'value_type': value_type,
-            'master_server_name': master_server_name
-        }
-        requests.post(self.url, data=json.dumps(site_tracker_dict))
+#     def update_remote_site_tracker(self):
+#         """Update a remote site tracker."""
+#
+#         self.update_site_tracker()
+#         site_tracker = self.site_tracker()
+#         value_type = site_tracker.tracker.value_type
+#         master_server_url = site_tracker.tracker.master_server_url
+#         site_tracker_dict = {
+#             'tracked_value': site_tracker.tracked_value,
+#             'site_name': site_tracker.site_name,
+#             'tracker': site_tracker.tracker,
+#             'value_type': value_type,
+#             'master_server_url': master_server_url
+#         }
+#         requests.post(self.url, data=json.dumps(site_tracker_dict))
 
     def tracker(self):
         """Returns a tracker."""
         try:
             tracker = Tracker.objects.get(
-                master_server_name=self.master_server_name,
+                master_server_url=self.master_server_url,
                 value_type=self.value_type,
             )
         except Tracker.DoesNotExist:
             Tracker.objects.create(
                 start_date=datetime.today(),
                 tracked_value=self.master_tracked_value(),
-                master_server_name=self.master_server_name,
+                master_server_url=self.master_server_url,
                 model=self.tracked_model,
                 app_name=self.app_label,
                 value_type=self.value_type,
@@ -108,7 +127,7 @@ class TrackerHelper(object):
                 value_limit=self.value_limit
             )
             tracker = Tracker.objects.get(
-                master_server_name=self.master_server_name,
+                master_server_url=self.master_server_url,
                 value_type=self.value_type
             )
         return tracker
@@ -135,6 +154,3 @@ class TrackerHelper(object):
                 tracker=self.tracker()
             )
         return site_tracker
-
-    def url_value(self):
-        pass

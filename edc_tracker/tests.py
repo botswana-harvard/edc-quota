@@ -15,12 +15,12 @@ class TestTracker(TestCase):
 
         tracker_helper = TrackerHelper()
         tracker_helper.app_label = 'edc_tracker'
-        tracker_helper.master_server_name = 'central'
+        tracker_helper.master_server_url = 'central'
         tracker_helper.value_type = 'Mobile settings'
         tracker_helper.tracked_model = Tracker
         tracker_helper.value_limit = 400
         tracker_helper.master_filter_dict = {
-            'master_server_name': tracker_helper.master_server_name,
+            'master_server_url': tracker_helper.master_server_url,
             'value_type': tracker_helper.value_type
         }
         tracker_helper.tracker()
@@ -30,12 +30,12 @@ class TestTracker(TestCase):
     def test_tracker2(self):
 
         tracker_helper = TrackerHelper()
-        tracker_helper.master_server_name = 'central'
+        tracker_helper.master_server_url = 'central'
         tracker_helper.value_type = 'Mobile settings'
         TrackerFactory()
         tracker = tracker_helper.tracker()
         tracker1 = Tracker.objects.get(
-            master_server_name='central',
+            master_server_url='central',
             value_type='Mobile settings'
         )
         self.assertEqual(tracker, tracker1)
@@ -44,7 +44,7 @@ class TestTracker(TestCase):
 
         tracker_helper = TrackerHelper()
         tracker_helper.app_label = 'edc_tracker'
-        tracker_helper.master_server_name = 'central'
+        tracker_helper.master_server_url = 'central'
         tracker_helper.value_type = 'Mobile settings'
         tracker_helper.value_limit = 400
         tracker_helper.master_filter_dict = {
@@ -61,7 +61,7 @@ class TestTracker(TestCase):
 
         tracker_helper = TrackerHelper()
         tracker_helper.app_label = 'edc_tracker'
-        tracker_helper.master_server_name = 'central'
+        tracker_helper.master_server_url = 'central'
         tracker_helper.value_type = 'Mobile settings'
         TrackerFactory(model='SiteTracker')
         tracker_helper.site_name = 'gaborone'
@@ -75,12 +75,12 @@ class TestTracker(TestCase):
 
         tracker_helper = TrackerHelper()
         tracker_helper.app_label = 'edc_tracker'
-        tracker_helper.master_server_name = 'central'
+        tracker_helper.master_server_url = 'central'
         tracker_helper.site_name = 'gaborone'
         tracker_helper.value_type = 'Mobile settings'
         TrackerFactory(model='SiteTracker')
         tracker1 = Tracker.objects.get(
-            master_server_name='central',
+            master_server_url='central',
             value_type='Mobile settings'
         )
         tracker_helper.site_filter_dict = {

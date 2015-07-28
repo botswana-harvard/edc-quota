@@ -12,9 +12,9 @@ class Tracker(models.Model):
         default=True,
         help_text=("Is the tracker active."))
 
-    master_server_name = models.CharField(
+    master_server_url = models.CharField(
         max_length=100,
-        help_text=("The name of the central server name, e.g central.")
+        help_text=("The url of the central server, e.g central.bhp.org.bw.")
     )
 
     value_type = models.CharField(
@@ -55,7 +55,7 @@ class Tracker(models.Model):
     )
 
     def __str__(self):
-        return "{}_{}".format(self.master_server_name, self.value_type)
+        return "{}_{}".format(self.master_server_url, self.value_type)
 
     class Meta:
         app_label = 'edc_tracker'
