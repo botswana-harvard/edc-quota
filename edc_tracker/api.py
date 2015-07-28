@@ -6,21 +6,6 @@ from tastypie.authentication import BasicAuthentication
 from edc_tracker.models import Tracker
 
 
-class UserResource(ModelResource):
-    class Meta:
-        queryset = User.objects.all()
-        resource_name = 'user'
-        excludes = [
-            'email',
-            'password',
-            'is_active',
-            'is_staff',
-            'is_superuser'
-        ]
-        allowed_methods = ['get']
-        authentication = BasicAuthentication()
-
-
 class TrackerResource(ModelResource):
     user = fields.ForeignKey(UserResource, 'user')
 

@@ -16,11 +16,10 @@ Including another URLconf
 from django.contrib import admin
 from django.conf.urls import include
 from tastypie.api import Api
-from edc_tracker.api import TrackerResource, UserResource
+from edc_tracker.api import TrackerResource
 
 
 tracker_resource_api = Api(api_name='v1')
-tracker_resource_api.register(UserResource())
 tracker_resource_api.register(TrackerResource())
 
 urlpatterns = [
