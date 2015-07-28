@@ -1,8 +1,8 @@
 from datetime import datetime
 import factory
 
-from models import SiteTracker
-from tracker_factory import TrackerFactory
+from edc_tracker.models import SiteTracker
+from edc_tracker.tracker_factory import TrackerFactory
 
 
 class SiteTrackerFactory(factory.DjangoModelFactory):

@@ -1,7 +1,7 @@
 from datetime import datetime
 import factory
 
-from models import Tracker
+from edc_tracker.models import Tracker
 
 
 class TrackerFactory(factory.DjangoModelFactory):

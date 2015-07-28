@@ -1,1 +1,1 @@
-from .tracker_admin import SiteTrackerAdmin, TrackerAdmin
+from edc_tracker.admin.tracker_admin import SiteTrackerAdmin, TrackerAdmin

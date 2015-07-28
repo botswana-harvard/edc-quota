@@ -1,8 +1,6 @@
 from django import forms
 
-# from edc.base.form.forms import BaseModelForm
-
-from ..models import Tracker, SiteTracker
+from edc_tracker.models import Tracker, SiteTracker
 
 
 class BaseModelForm(forms.ModelForm):

@@ -1,7 +1,7 @@
 from django.contrib import admin
 
-from ..forms import SiteTrackerForm, TrackerForm
-from ..models import Tracker, SiteTracker
+from edc_tracker.forms import SiteTrackerForm, TrackerForm
+from edc_tracker.models import Tracker, SiteTracker
 
 
 class SiteTrackerAdmin(admin.ModelAdmin):

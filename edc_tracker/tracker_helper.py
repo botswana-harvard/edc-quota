@@ -3,7 +3,7 @@ import json
 
 from datetime import datetime
 
-from models import Tracker, SiteTracker
+from edc_tracker.models import Tracker, SiteTracker
 from django.core.exceptions import ImproperlyConfigured
 
 

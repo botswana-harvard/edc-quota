@@ -1,9 +1,9 @@
 from django.test import TestCase
 
-from models import Tracker, SiteTracker
-from tracker_helper import TrackerHelper
-from tracker_factory import TrackerFactory
-from site_tracker_factory import SiteTrackerFactory
+from edc_tracker.models import Tracker, SiteTracker
+from edc_tracker.tracker_helper import TrackerHelper
+from edc_tracker.tracker_factory import TrackerFactory
+from edc_tracker.site_tracker_factory import SiteTrackerFactory
 
 
 class TestTracker(TestCase):
