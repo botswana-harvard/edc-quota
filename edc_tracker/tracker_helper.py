@@ -135,3 +135,6 @@ class TrackerHelper(object):
                 tracker=self.tracker()
             )
         return site_tracker
+
+    def url_value(self):
+        pass
