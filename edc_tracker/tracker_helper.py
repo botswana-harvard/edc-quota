@@ -46,7 +46,7 @@ class TrackerHelper(object):
 #             )
         self.url_data = {
             'resource': 'tracker',
-            'username': self.request.user.username,
+            'username': 'self.request.user.username',
             'api_key': 'api_key'
         }
 
