@@ -11,7 +11,7 @@ class TrackerHelper(object):
     """Calculates and updates tracked value.
     """
 
-    def __init__(self, request):
+    def __init__(self):
         """Sets value_type, and tracker server name."""
 
         self.master_server_url = None
@@ -23,8 +23,9 @@ class TrackerHelper(object):
         self.value_limit = None
         self.master_filter_dict = {}
         self.site_filter_dict = {}
+        self.request = None
         try:
-            api_key = request.user.api_key.key
+            api_key = self.request.user.api_key.key
         except AttributeError as attribute_error:
             if 'object has no attribute \'api_key\'' in str(attribute_error):
                 raise ValueError(
