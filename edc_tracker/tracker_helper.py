@@ -24,30 +24,30 @@ class TrackerHelper(object):
         self.master_filter_dict = {}
         self.site_filter_dict = {}
         self.request = None
-        try:
-            api_key = self.request.user.api_key.key
-        except AttributeError as attribute_error:
-            if 'object has no attribute \'api_key\'' in str(attribute_error):
-                raise ValueError(
-                    'ApiKey does not exist for user {}. Check if'
-                    'tastypie was added to installed apps or Perhaps run '
-                    'create_api_key().'.format(self.request.user)
-                )
-            elif 'object has no attribute \'key\'' in str(attribute_error):
-                raise ValueError(
-                    'ApiKey not found for user {}. Perhaps run '
-                    'create_api_key().'.format(self.request.user)
-                )
-            raise
-        except:
-            raise ValueError(
-                'ApiKey not found for user {}. Perhaps run '
-                'create_api_key().'.format(self.request.user,)
-            )
+#         try:
+#             api_key = self.request.user.api_key.key
+#         except AttributeError as attribute_error:
+#             if 'object has no attribute \'api_key\'' in str(attribute_error):
+#                 raise ValueError(
+#                     'ApiKey does not exist for user {}. Check if'
+#                     'tastypie was added to installed apps or Perhaps run '
+#                     'create_api_key().'.format(self.request.user)
+#                 )
+#             elif 'object has no attribute \'key\'' in str(attribute_error):
+#                 raise ValueError(
+#                     'ApiKey not found for user {}. Perhaps run '
+#                     'create_api_key().'.format(self.request.user)
+#                 )
+#             raise
+#         except:
+#             raise ValueError(
+#                 'ApiKey not found for user {}. Perhaps run '
+#                 'create_api_key().'.format(self.request.user,)
+#             )
         self.url_data = {
             'resource': 'tracker',
             'username': self.request.user.username,
-            'api_key': api_key
+            'api_key': 'api_key'
         }
 
     def master_tracked_value(self):
