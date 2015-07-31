@@ -12,7 +12,7 @@ class SiteTrackerFactory(factory.DjangoModelFactory):
     start_date = datetime.today()
     tracked_value = 0
     site_name = 'gaborone'
-    model = SiteTracker
+    model_name = SiteTracker
     app_name = 'edc_tracker'
     update_date = datetime.today()
     tracker = TrackerFactory()

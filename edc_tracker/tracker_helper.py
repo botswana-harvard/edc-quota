@@ -3,6 +3,8 @@ import json
 
 from datetime import datetime
 
+from django.db.models.loading import get_model
+
 from edc_tracker.models import Tracker, SiteTracker
 from django.core.exceptions import ImproperlyConfigured
 
@@ -15,7 +17,8 @@ class TrackerHelper(object):
         """Sets value_type, and tracker server name."""
 
         self.master_server_url = None
-        self.tracked_model = None
+        self.model_name = None
+        self.tracked_model = get_model(self.model_name, self.app_label)
         self.app_label = None
         self.site_name = None
         self.value_type = None
@@ -121,7 +124,7 @@ class TrackerHelper(object):
                 start_date=datetime.today(),
                 tracked_value=self.master_tracked_value(),
                 master_server_url=self.master_server_url,
-                model=self.tracked_model,
+                model_name=self.tracked_model,
                 app_name=self.app_label,
                 value_type=self.value_type,
                 update_date=datetime.today(),
@@ -145,7 +148,7 @@ class TrackerHelper(object):
                 start_date=datetime.today(),
                 tracked_value=self.site_tracked_value(),
                 site_name=self.site_name,
-                model=self.tracked_model,
+                model_name=self.tracked_model,
                 app_name=self.app_label,
                 update_date=datetime.today(),
                 tracker=self.tracker()

@@ -3,18 +3,14 @@ from django import forms
 from edc_tracker.models import Tracker, SiteTracker
 
 
-class BaseModelForm(forms.ModelForm):
-    pass
-
-
-class TrackerForm(BaseModelForm):
+class TrackerForm(forms.ModelForm):
 
     class Meta:
         model = Tracker
         fields = '__all__'
 
 
-class SiteTrackerForm(BaseModelForm):
+class SiteTrackerForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super(SiteTrackerForm, self).clean()

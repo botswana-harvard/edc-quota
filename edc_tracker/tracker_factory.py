@@ -12,7 +12,7 @@ class TrackerFactory(factory.DjangoModelFactory):
     tracked_value = 0
     value_type = 'Mobile settings'
     master_server_url = 'central'
-    model = 'Tracker'
+    model_name = 'Tracker'
     app_name = 'edc_tracker'
     update_date = datetime.today()
     value_limit = 400

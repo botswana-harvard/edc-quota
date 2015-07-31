@@ -27,7 +27,7 @@ class Tracker(models.Model):
         help_text=("App name of the value being tracked.")
     )
 
-    model = models.CharField(
+    model_name = models.CharField(
         max_length=150,
         help_text=("Model being tracked.")
     )
@@ -74,7 +74,7 @@ class SiteTracker(models.Model):
         max_length=100,
     )
 
-    model = models.CharField(
+    model_name = models.CharField(
         max_length=150,
     )
 
@@ -98,7 +98,7 @@ class SiteTracker(models.Model):
     )
 
     def __str__(self):
-        return "{}_{}".format(self.model, self.tracker.value_type)
+        return "{}_{}".format(self.model_name, self.tracker.value_type)
 
     class Meta:
         app_label = 'edc_tracker'

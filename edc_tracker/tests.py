@@ -63,7 +63,7 @@ class TestTracker(TestCase):
         tracker_helper.app_label = 'edc_tracker'
         tracker_helper.master_server_url = 'central'
         tracker_helper.value_type = 'Mobile settings'
-        TrackerFactory(model='SiteTracker')
+        TrackerFactory(model_name='SiteTracker')
         tracker_helper.site_name = 'gaborone'
         tracker_helper.tracked_model = SiteTracker
         tracker_helper.site_filter_dict = {'site_name': 'gaborone'}
@@ -78,7 +78,7 @@ class TestTracker(TestCase):
         tracker_helper.master_server_url = 'central'
         tracker_helper.site_name = 'gaborone'
         tracker_helper.value_type = 'Mobile settings'
-        TrackerFactory(model='SiteTracker')
+        TrackerFactory(model_name='SiteTracker')
         tracker1 = Tracker.objects.get(
             master_server_url='central',
             value_type='Mobile settings'

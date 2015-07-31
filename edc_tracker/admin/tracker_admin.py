@@ -11,7 +11,7 @@ class SiteTrackerAdmin(admin.ModelAdmin):
         'start_date',
         'tracked_value',
         'site_name',
-        'model',
+        'model_name',
         'app_name',
         'update_date',
         'tracker',
@@ -58,7 +58,7 @@ class TrackerAdmin(admin.ModelAdmin):
         'start_date',
         'tracked_value',
         'master_server_url',
-        'model',
+        'model_name',
         'app_name',
         'update_date',
         'value_limit'
