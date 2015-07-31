@@ -18,8 +18,8 @@ class TrackerHelper(object):
 
         self.master_server_url = None
         self.model_name = None
-        self.tracked_model = get_model(self.model_name, self.app_label)
         self.app_label = None
+        self.tracked_model = get_model(self.model_name, self.app_label)
         self.site_name = None
         self.value_type = None
         self.auth = None
