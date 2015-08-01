@@ -38,8 +38,8 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'edc_tracker',
-    'tastypie',
+    'edc_quota_monitor',
+    'tastypie'
 )
 
 # MIDDLEWARE_CLASSES = (
@@ -65,7 +65,7 @@ MIDDLEWARE_CLASSES = (
 )
 
 
-ROOT_URLCONF = 'edc_tracker.urls'
+ROOT_URLCONF = 'edc_quota_monitor.urls'
 
 TEMPLATES = [
     {
@@ -83,7 +83,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'edc_tracker.wsgi.application'
+WSGI_APPLICATION = 'edc_quota_monitor.wsgi.application'
 
 
 # Database
@@ -120,5 +120,3 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 GIT_DIR = BASE_DIR.ancestor(1)
-
-TRACKER_SERVER_NAME = 'coulson'
