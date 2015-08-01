@@ -68,6 +68,13 @@ class QoutaMonitor(object):
     def calculate_clients_quotas(self):
         """Calculate a quota for each client."""
         total_clients = len(self.clients)
+        quota_per_client = (self.calculate_master_quota()/total_clients)
+        # Leave reminders for re-allocating
+        if quota_per_client > 3 and not quota_per_client < 10:
+            quota_per_client -= 1
+        elif quota_per_client < 10:
+            quota_per_client = 10
+        return quota_per_client
 
     def allocate_quota(self):
         """Allocate client quota."""
