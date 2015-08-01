@@ -124,7 +124,7 @@ class TrackerHelper(object):
                 start_date=datetime.today(),
                 tracked_value=self.master_tracked_value(),
                 master_server_url=self.master_server_url,
-                model_name=self.tracked_model,
+                model_name=self.model_name,
                 app_name=self.app_label,
                 value_type=self.value_type,
                 update_date=datetime.today(),
@@ -148,7 +148,7 @@ class TrackerHelper(object):
                 start_date=datetime.today(),
                 tracked_value=self.site_tracked_value(),
                 site_name=self.site_name,
-                model_name=self.tracked_model,
+                model_name=self.model_name,
                 app_name=self.app_label,
                 update_date=datetime.today(),
                 tracker=self.tracker()
