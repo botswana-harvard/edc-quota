@@ -11,8 +11,8 @@ class Controller(object):
     For example:
         quota = Quota.objects.get(...)
         controller = Controller(quota)
-        controller.fetch_all()
-        controller.update_all()
+        controller.get_all()
+        controller.put_all()
 
     """
     def __init__(self, quota=None, app_label=None, model_name=None):
@@ -43,45 +43,54 @@ class Controller(object):
     def register(self, client):
         self.clients[client.name] = client
 
-    def fetch_all(self):
+    def get_all(self):
         """Contacts all registered clients and updates the Quota model."""
         self.last_contact = timezone.now()
         self.total_count = 0
         self.clients_contacted = []
         for name in self.clients:
-            request = requests.get(self.clients.get(name).url)
-            objects = request.json()['objects']
-            try:
-                self.clients.get(name).model_count = objects[0].get('model_count', None)
+            self.clients.get(name).model_count = self.get_client_model_count(name)
+            if self.clients.get(name).model_count:
                 self.clients.get(name).last_contact = self.last_contact
-            except IndexError:
-                self.clients.get(name).model_count = None
-            self.total_count += self.clients.get(name).model_count
-            self.clients_contacted.append(name)
+                self.total_count += self.clients.get(name).model_count
+                self.clients_contacted.append(name)
         QuotaHistory.objects.create(
             quota=self.quota,
-            app_label=self.app_label,
-            model_name=self.model_name,
             total_count=self.total_count,
             last_contact=self.last_contact,
             clients_contacted=','.join(self.clients_contacted),
         )
 
-    def update_all(self):
-        """Contacts all registered clients and sets their new quota targets."""
-        quota_history = self.calculate()
-        for name in quota_history.clients_contacted.split(','):
+    def get_client_model_count(self, name):
+        """Fetches one clients model_count over the REST api."""
+        request = requests.get(self.clients.get(name).url)
+        objects = request.json()['objects']
+        try:
+            model_count = objects[0].get('model_count', None)
+        except IndexError:
+            model_count = None
+        return model_count
+
+    def put_all(self):
+        """Puts the new targets on the clients after fetching all model_counts."""
+        quota_history = QuotaHistory.objects.create(quota=self.quota)
+        quota_history = self.calculate(quota_history)
+        try:
+            self.clients_contacted = quota_history.clients_contacted.split(',')
+        except AttributeError:
+            self.clients_contacted = []
+        for name in self.clients_contacted:
             self.clients.get(name).new_quota_target = quota_history.new_quota_target
             self.clients.get(name).new_quota_expires = quota_history.new_quota_expires
-        for name in self.clients:
-            # add put request here
-            pass
+            self.put_new_client_quota(name)
 
-    def calculate(self):
+    def calculate(self, quota_history):
         """Calculates new targets, updates QuotaHistory and returns the new QuotaHistory instance."""
-        quota_history = QuotaHistory.objects.filter(quota=self.quota).last()
         quota_history.new_quota_target = '?'  # add calculation for a new target for all contacted clients
         quota_history.new_quota_expires = '?'  # add an expiration date e.g. tomorrow end of day
         quota_history.save()
-        quota_history = QuotaHistory.objects.filter(quota=self.quota).last()
+        quota_history = QuotaHistory.objects.get(pk=quota_history.pk)
         return quota_history
+
+    def put_new_client_quota(self, name):
+        pass

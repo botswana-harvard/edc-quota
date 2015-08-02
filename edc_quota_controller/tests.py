@@ -16,6 +16,12 @@ from edc_quota_controller.controller import Controller
 tz = pytz.timezone(settings.TIME_ZONE)
 
 
+class DummyController(Controller):
+
+    def get_client_model_count(self, name):
+        return 5
+
+
 class TestQuotaModel(QuotaMixin, models.Model):
 
     field1 = models.CharField(max_length=10)
@@ -64,3 +70,14 @@ class TestController(TestCase):
             is_active=True)
         controller = Controller(self.quota)
         self.assertEqual(Client.objects.all().count() - 1, len(controller.clients))
+
+    def test_update_from_dummy_clients_contacted(self):
+        controller = DummyController(self.quota)
+        controller.get_all()
+        quota_history = QuotaHistory.objects.filter(quota=controller.quota).last()
+        clients_contacted = quota_history.clients_contacted.split(',')
+        clients_contacted.sort()
+        self.assertEqual(clients_contacted, [c.name for c in Client.objects.all().order_by('hostname')])
+        self.assertGreater(len(clients_contacted), 0)
+
+    

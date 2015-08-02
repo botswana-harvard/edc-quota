@@ -29,11 +29,13 @@ class QuotaHistory(models.Model):
 
     quota = models.ForeignKey(Quota)
 
-    total_count = models.IntegerField()
+    total_count = models.IntegerField(default=0)
 
-    clients_contacted = models.IntegerField()
+    clients_contacted = models.CharField(
+        max_length=500,
+        null=True)
 
-    last_contacted = models.DateTimeField()
+    last_contact = models.DateTimeField(null=True)
 
     quota_datetime = models.DateTimeField(default=timezone.now)
 
