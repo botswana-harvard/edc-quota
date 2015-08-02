@@ -79,8 +79,8 @@ class Controller(object):
     def calculate_new_quota(self):
         """Calculates new targets, updates QuotaHistory and returns the new QuotaHistory instance."""
         quota_history = QuotaHistory.objects.filter(quota=self.quota).last()
-        quota_history.new_quota_target = '?'
-        quota_history.new_quota_expires = '?'
+        quota_history.new_quota_target = '?'  # add calculation for a new target for all contacted clients
+        quota_history.new_quota_expires = '?'  # add an expiration date e.g. tomorrow end of day
         quota_history.save()
         quota_history = QuotaHistory.objects.filter(quota=self.quota).last()
         return quota_history
