@@ -49,18 +49,18 @@ class Controller(object):
 
     def update_clients(self):
         """Contacts all registered clients and sets their new quota targets."""
-        quota = self.calculate_new_quota()
-        for name in self.clients:
-            self.clients.get(name).new_quota_target = quota.new_quota_target
-            self.clients.get(name).new_quota_expires = quota.new_quota_expires
+        quota_history = self.calculate_new_quota()
+        for name in quota_history.clients_contacted.split(','):
+            self.clients.get(name).new_quota_target = quota_history.new_quota_target
+            self.clients.get(name).new_quota_expires = quota_history.new_quota_expires
         for name in self.clients:
             # add put request here
             pass
 
     def calculate_new_quota(self):
-        quota = Quota.objects.last()
-        quota.new_quota_target = '?'
-        quota.new_quota_expires = '?'
-        quota.save()
-        quota = Quota.objects.last()
-        return quota
+        quota_history = QuotaHistory.objects.filter(quota=self.quota).last()
+        quota_history.new_quota_target = '?'
+        quota_history.new_quota_expires = '?'
+        quota_history.save()
+        quota_history = QuotaHistory.objects.filter(quota=self.quota).last()
+        return quota_history
