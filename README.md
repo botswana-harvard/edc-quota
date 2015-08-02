@@ -2,7 +2,7 @@
 
 [![Coverage Status](https://coveralls.io/repos/botswana-harvard/edc-tracker/badge.svg?branch=develop&service=github)](https://coveralls.io/github/botswana-harvard/edc-tracker?branch=develop)
 
-# edc-value-tracker
+# edc-quota
 
 Keep track of the number of instances created for a specified model on one or more offline clients managed by a central controller.
 
@@ -14,3 +14,54 @@ Clients are disconnected from the central controller when collecting data. Go on
 - central controller can update itself on progress of all clients toward reaching the over overall quota
 - central controller can approve for a client to override it's quota.
  
+ 
+There are two apps, `edc_quota_controller` and `edc_quota_client`.
+
+edc_quota_client
+----------------
+
+Declare your model with the `QuotaMixin`:
+
+	from edc_quota_client.models import QuotaMixin 
+
+	class MyModel(QuotaMixin, models.Model):
+	
+		field1 = models.CharField(max_length=25)
+
+		field2 = models.CharField(max_length=25)
+		
+		class Meta:
+			app_label = 'my_app'
+			
+Set a quota:
+	
+	from datetime import timedelta
+	from django.utils import timezone
+	from edc_quota_client.models import Quota
+	
+	Quota.objects.create(
+		app_label=MyModel._meta.app_label,
+		model_name=MyModel._meta.object_name,
+		expires_datetime=timezone.now() + timedelta(days=1) 
+		target=100
+	)
+		
+Model will raise an exception before more than 100 instances are created  
+
+	>>> for i in range(0,100):
+	>>> 	MyModel.objects.create()
+	>>>	
+	>>> MyModel.objects.create()
+	QuotaReachedError: Quota for model MyModel has been reached.
+	
+Check progress toward the quota:
+
+	>>> quota = Quota.objects.filter(
+			app_label=MyModel._meta.app_label,
+			model_name=MyModel._meta.object_name,
+		).latest()
+	>>> quota.target
+	100
+	>>> quota.model_count
+	100
+	
