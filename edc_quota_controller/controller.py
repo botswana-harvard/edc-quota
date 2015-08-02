@@ -54,6 +54,7 @@ class Controller(object):
                 self.clients.get(name).last_contact = self.last_contact
                 self.total_count += self.clients.get(name).model_count
                 self.clients_contacted.append(name)
+            self.clients.get(name).save()
         QuotaHistory.objects.create(
             quota=self.quota,
             total_count=self.total_count,
@@ -72,7 +73,7 @@ class Controller(object):
         return model_count
 
     def put_all(self):
-        """Puts the new targets on the clients after fetching all model_counts."""
+        """Puts the new quota targets on the clients."""
         quota_history = QuotaHistory.objects.create(quota=self.quota)
         quota_history = self.calculate(quota_history)
         try:
@@ -80,14 +81,15 @@ class Controller(object):
         except AttributeError:
             self.clients_contacted = []
         for name in self.clients_contacted:
-            self.clients.get(name).new_quota_target = quota_history.new_quota_target
-            self.clients.get(name).new_quota_expires = quota_history.new_quota_expires
+            self.clients.get(name).target = quota_history.target
+            self.clients.get(name).expires_datetime = quota_history.expires_datetime
+            self.clients.get(name).save()
             self.put_new_client_quota(name)
 
     def calculate(self, quota_history):
         """Calculates new targets, updates QuotaHistory and returns the new QuotaHistory instance."""
-        quota_history.new_quota_target = '?'  # add calculation for a new target for all contacted clients
-        quota_history.new_quota_expires = '?'  # add an expiration date e.g. tomorrow end of day
+        quota_history.target = -1  # add calculation for a new target for all contacted clients
+        quota_history.expires_datetime = timezone.now()  # add an expiration date e.g. tomorrow end of day
         quota_history.save()
         quota_history = QuotaHistory.objects.get(pk=quota_history.pk)
         return quota_history

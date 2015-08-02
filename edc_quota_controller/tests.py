@@ -21,6 +21,9 @@ class DummyController(Controller):
     def get_client_model_count(self, name):
         return 5
 
+    def put_new_client_quota(self, name):
+        pass
+
 
 class TestQuotaModel(QuotaMixin, models.Model):
 
@@ -86,3 +89,13 @@ class TestController(TestCase):
         quota_history = QuotaHistory.objects.filter(quota=controller.quota).last()
         self.assertEqual(quota_history.total_count, 5 * len(quota_history.clients_contacted.split(',')))
         self.assertEqual(quota_history.last_contact, controller.last_contact)
+
+    def test_put_all(self):
+        controller = DummyController(self.quota)
+        controller.get_all()
+        controller.put_all()
+        quota_history = QuotaHistory.objects.filter(quota=controller.quota).last()
+        for client in Client.objects.all():
+            self.assertEqual(client.last_contact, controller.last_contact)
+            self.assertEqual(client.target, quota_history.target)
+            self.assertEqual(client.expires_datetime, quota_history.expires_datetime)

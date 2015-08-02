@@ -35,6 +35,10 @@ class QuotaHistory(models.Model):
         max_length=500,
         null=True)
 
+    target = models.IntegerField(null=True)
+
+    expires_datetime = models.DateTimeField(null=True)
+
     last_contact = models.DateTimeField(null=True)
 
     quota_datetime = models.DateTimeField(default=timezone.now)
@@ -60,6 +64,10 @@ class Client(models.Model):
     api_name = models.CharField(max_length=25, default='v1')
 
     last_contact = models.DateTimeField(null=True)
+
+    target = models.IntegerField(default=0)
+
+    expires_datetime = models.DateTimeField(null=True)
 
     is_active = models.BooleanField()
 
