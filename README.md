@@ -6,14 +6,14 @@
 
 Keep track of the number of instances created for a specified model on one or more offline clients managed by a central controller.
 
-Clients are disconnected from the central controller when collecting data. Go online at the end of each shift or day.
+Clients are disconnected from the central controller when collecting data. They go online at the end of each shift or day
+and are contacted by the controller.
 
 - sets an overall quota for a model managed by a central controller
 - sets a quota per client model to be managed by the client
 - central controller can change the quota per registered client over REST API
 - central controller can update itself on progress of all clients toward reaching the over overall quota
 - central controller can approve for a client to override it's quota.
- 
  
 There are two apps, `edc_quota_controller` and `edc_quota_client`.
 
@@ -81,8 +81,6 @@ Check progress toward the quota:
 edc_quota_controller
 --------------------
 
-(not tested)
-
 The controller `get`s model_counts from each registered client, calculates a new quota targets, and `put` updated quota targets to each client.
 
 Models involved are in `edc_quota_controller`: `quota` `quota_history` and `client`.
@@ -94,5 +92,13 @@ The controller will register all clients associated with a defined `quota`. The 
         quota = Quota.objects.get(...)
 
         controller = Controller(quota)
-        controller.fetch_all()
-        controller.update_all()
+        controller.get_all()
+        controller.put_all()
+
+Todo
+-----
+
+- allow client quota resource to accept put
+- calculate new quotas targets for clients in the controller before "put'
+
+ 
