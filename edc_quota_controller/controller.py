@@ -58,6 +58,7 @@ class Controller(object):
             pass
 
     def calculate_new_quota(self):
+        """Calculates new targets, updates QuotaHistory and returns the new QuotaHistory instance."""
         quota_history = QuotaHistory.objects.filter(quota=self.quota).last()
         quota_history.new_quota_target = '?'
         quota_history.new_quota_expires = '?'
