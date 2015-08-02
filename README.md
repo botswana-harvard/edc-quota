@@ -78,3 +78,21 @@ Check progress toward the quota:
 	>>> quota.model_count
 	100
 	
+edc_quota_controller
+--------------------
+
+(not tested)
+
+The controller `get`s model_counts from each registered client, calculates a new quota targets, and `put` updated quota targets to each client.
+
+Models involved are in `edc_quota_controller`: `quota` `quota_history` and `client`.
+
+The controller will register all clients associated with a defined `quota`. The association is on `app_label` and `model_name`.
+
+    For example:
+
+        quota = Quota.objects.get(...)
+
+        controller = Controller(quota)
+        controller.fetch_all()
+        controller.update_all()
