@@ -1,0 +1,3 @@
+
+class QuotaReachedError(Exception):
+    pass
