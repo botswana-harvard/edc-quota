@@ -27,8 +27,10 @@ edc_quota_client
 	from tastypie.api import Api
 	from edc_quota_client.api import QuotaResource
 
-	edc_quota_api = Api(api_name='quota')
-	edc_quota_api.register(QuotaResource())
+	api = Api(api_name='v1')
+	api.register(QuotaResource())
+
+	urlpatterns += [url(r'^api/', include(api.urls))]
 
 
 Declare your model with the `QuotaMixin`:

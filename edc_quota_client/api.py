@@ -9,12 +9,11 @@ class QuotaResource(ModelResource):
     class Meta:
         resource_name = 'quota'
         queryset = Quota.objects.all()
-        resource_name = 'subject_consent'
-        fields = ['target', 'model_count']
+        fields = ['target', 'model_count', 'id', 'quota_datetime', 'app_label', 'model_name']
         allowed_methods = ['get']
         filtering = {
             'app_label': ['exact'],
             'model_name': ['iexact'],
         }
         authorization = ReadOnlyAuthorization()
-        authentication = Authentication()
+        authentication = BasicAuthentication()

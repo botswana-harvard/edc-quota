@@ -16,15 +16,14 @@ Including another URLconf
 from django.contrib import admin
 from django.conf.urls import include, url
 from tastypie.api import Api
-from edc_quota.api import MasterQuotaResource, ClientQuotaResource
+from edc_quota_client.api import QuotaResource
 
 
-quota_resource_api = Api(api_name='quota')
-quota_resource_api.register(MasterQuotaResource())
-quota_resource_api.register(ClientQuotaResource())
+api = Api(api_name='v1')
+api.register(QuotaResource())
 
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^api/', include(quota_resource_api.urls))
+    url(r'^api/', include(api.urls))
 ]
