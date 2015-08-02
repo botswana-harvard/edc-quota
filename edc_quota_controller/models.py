@@ -1,21 +1,47 @@
 from django.db import models
+from django.utils import timezone
 
 
-class QuotaModel(models.Model):
+class Quota(models.Model):
+    """Controllers quota model."""
 
     app_label = models.CharField(max_length=25)
 
     model_name = models.CharField(max_length=25)
 
-    quota = models.IntegerField()
+    target = models.IntegerField()
 
-    is_active = models.BooleanField()
+    expires_datetime = models.DateTimeField()
+
+    is_active = models.BooleanField(default=True)
 
     def __str__(self):
-        return "{}_{}".format(self.app_label, self.model_name)
+        return "{}".format(self.model_name)
 
     class Meta:
-        app_label = 'edc_quota'
+        app_label = 'edc_quota_client'
+
+
+class QuotaHistory(models.Model):
+    """Controllers quota history model."""
+
+    get_latest_by = "quota_datetime"
+
+    quota = models.ForeignKey(Quota)
+
+    total_count = models.IntegerField()
+
+    clients_contacted = models.IntegerField()
+
+    last_contacted = models.DateTimeField()
+
+    quota_datetime = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return "{}".format(self.model_name)
+
+    class Meta:
+        app_label = 'edc_quota_client'
 
 
 class Client(models.Model):
@@ -23,12 +49,29 @@ class Client(models.Model):
 
     hostname = models.CharField(max_length=25)
 
-    url = models.CharField(max_length=150, null=True)
+    app_label = models.CharField(max_length=25)
+
+    model_name = models.CharField(max_length=25)
+
+    port = models.IntegerField(default=80)
+
+    ap_name = models.CharField(max_length=25, default='v1')
+
+    last_contact = models.DateTimeField(null=True)
 
     is_active = models.BooleanField()
 
     def __str__(self):
         return "{}".format(self.hostname)
+
+    @property
+    def url(self):
+        return 'http://{}:{}/api/{}/?app_label={}&model_name={}&format=json'.format(
+            self.hostname, self.port, self.api_name, self.app_label, self.model_name)
+
+    @property
+    def name(self):
+        return self.hostname
 
     class Meta:
         app_label = 'edc_quota'
