@@ -22,6 +22,15 @@ There are two apps, `edc_quota_controller` and `edc_quota_client`.
 edc_quota_client
 ----------------
 
+`edc_quota_client` can expose a REST API to query progress towards a quota. Add this to your `urls.py` if you want OR if you are using `edc_quota_controller`.
+
+	from tastypie.api import Api
+	from edc_quota_client.api import QuotaResource
+
+	edc_quota_api = Api(api_name='quota')
+	edc_quota_api.register(QuotaResource())
+
+
 Declare your model with the `QuotaMixin`:
 
 	from edc_quota_client.models import QuotaMixin 
@@ -44,13 +53,13 @@ Set a quota:
 	Quota.objects.create(
 		app_label=MyModel._meta.app_label,
 		model_name=MyModel._meta.object_name,
-		expires_datetime=timezone.now() + timedelta(days=1) 
+		expires_datetime=timezone.now() + timedelta(days=1),
 		target=100
 	)
 		
 Model will raise an exception before more than 100 instances are created  
 
-	>>> for i in range(0,100):
+	>>> for _ in range(0, 100):
 	>>> 	MyModel.objects.create()
 	>>>	
 	>>> MyModel.objects.create()

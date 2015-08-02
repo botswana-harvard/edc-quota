@@ -170,3 +170,16 @@ class TestQuota(TestCase):
             expires_datetime=timezone.now() + timedelta(days=-1)
         )
         self.assertRaises(QuotaReachedError, TestQuotaModel.objects.create)
+
+    def test_large_quota(self):
+        Quota.objects.create(
+            app_label=TestQuotaModel._meta.app_label,
+            model_name=TestQuotaModel._meta.object_name,
+            expires_datetime=timezone.now() + timedelta(days=1),
+            target=100
+        )
+        for _ in range(0, 100):
+            TestQuotaModel.objects.create()
+        self.assertRaises(QuotaReachedError, TestQuotaModel.objects.create)
+        quota = Quota.objects.last()
+        self.assertEqual(quota.model_count, 100)
