@@ -6,12 +6,31 @@ from .models import Client, Quota, QuotaHistory
 
 
 class Controller(object):
+    """A class to control or manage quotas between a group of offline clients.
 
-    def __init__(self, quota):
-        self.quota = quota
+    For example:
+        quota = Quota.objects.get(...)
+        controller = Controller(quota)
+        controller.fetch_all()
+        controller.update_all()
+
+    """
+    def __init__(self, quota=None, app_label=None, model_name=None):
+        if quota:
+            self.quota = Quota.objects.get(
+                pk=quota.pk,
+                is_active=True,
+                expires_datetime__gte=timezone.now())
+        else:
+            self.quota = Quota.objects.get(
+                app_label=app_label,
+                model_name=model_name,
+                is_active=True,
+                expires_datetime__gte=timezone.now())
         self.last_contact = None
         self.total_count = 0
         self.clients_contacted = []
+        self.register_all()
 
     def register(self, client):
         self.clients[client.name] = client
@@ -23,7 +42,7 @@ class Controller(object):
                 is_active=True):
             self.register(client)
 
-    def update_from_clients(self):
+    def fetch_all(self):
         """Contacts all registered clients and updates the Quota model."""
         self.last_contact = timezone.now()
         self.total_count = 0
@@ -47,7 +66,7 @@ class Controller(object):
             clients_contacted=','.join(self.clients_contacted),
         )
 
-    def update_clients(self):
+    def update_all(self):
         """Contacts all registered clients and sets their new quota targets."""
         quota_history = self.calculate_new_quota()
         for name in quota_history.clients_contacted.split(','):
