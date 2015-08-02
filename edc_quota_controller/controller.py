@@ -1,5 +1,6 @@
 import requests
 
+from datetime import timedelta
 from django.utils import timezone
 
 from .models import Client, Quota, QuotaHistory
@@ -30,6 +31,7 @@ class Controller(object):
         self.clients = {}
         self.last_contact = None
         self.total_count = 0
+        self._quota_history = None
         self.clients_contacted = []
         self.register_all()
 
@@ -74,25 +76,32 @@ class Controller(object):
 
     def put_all(self):
         """Puts the new quota targets on the clients."""
-        quota_history = QuotaHistory.objects.create(quota=self.quota)
-        quota_history = self.calculate(quota_history)
         try:
-            self.clients_contacted = quota_history.clients_contacted.split(',')
+            self.clients_contacted = self.quota_history.clients_contacted.split(',')
         except AttributeError:
             self.clients_contacted = []
         for name in self.clients_contacted:
-            self.clients.get(name).target = quota_history.target
-            self.clients.get(name).expires_datetime = quota_history.expires_datetime
+            self.clients.get(name).target = self.quota_history.target
+            self.clients.get(name).expires_datetime = self.quota_history.expires_datetime
             self.clients.get(name).save()
             self.put_new_client_quota(name)
 
-    def calculate(self, quota_history):
+    def quota_history(self):
         """Calculates new targets, updates QuotaHistory and returns the new QuotaHistory instance."""
-        quota_history.target = -1  # add calculation for a new target for all contacted clients
-        quota_history.expires_datetime = timezone.now()  # add an expiration date e.g. tomorrow end of day
-        quota_history.save()
-        quota_history = QuotaHistory.objects.get(pk=quota_history.pk)
-        return quota_history
+        if not self._quota_history:
+            self._quota_history = QuotaHistory.objects.create(quota=self.quota)
+            self._quota_history.target = self.quota_target()
+            self._quota_history.expires_datetime = self.expires_datetime()
+            self._quota_history.save()
+            self._quota_history = QuotaHistory.objects.get(pk=self._quota_history.pk)
+        return self._quota_history
+
+    def quota_target(self):
+        """Calculates new quota targets for all contacted clients."""
+        return -1
+
+    def expires_datetime(self):
+        return timezone.now() + timedelta(days=1)
 
     def put_new_client_quota(self, name):
         pass  # put to the tastypie quota resource on the client
