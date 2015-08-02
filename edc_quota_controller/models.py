@@ -19,7 +19,7 @@ class Quota(models.Model):
         return "{}".format(self.model_name)
 
     class Meta:
-        app_label = 'edc_quota_client'
+        app_label = 'edc_quota_controller'
 
 
 class QuotaHistory(models.Model):
@@ -41,7 +41,7 @@ class QuotaHistory(models.Model):
         return "{}".format(self.model_name)
 
     class Meta:
-        app_label = 'edc_quota_client'
+        app_label = 'edc_quota_controller'
 
 
 class Client(models.Model):
@@ -55,7 +55,7 @@ class Client(models.Model):
 
     port = models.IntegerField(default=80)
 
-    ap_name = models.CharField(max_length=25, default='v1')
+    api_name = models.CharField(max_length=25, default='v1')
 
     last_contact = models.DateTimeField(null=True)
 
@@ -74,4 +74,4 @@ class Client(models.Model):
         return self.hostname
 
     class Meta:
-        app_label = 'edc_quota'
+        app_label = 'edc_quota_controller'

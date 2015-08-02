@@ -27,6 +27,7 @@ class Controller(object):
                 model_name=model_name,
                 is_active=True,
                 expires_datetime__gte=timezone.now())
+        self.clients = {}
         self.last_contact = None
         self.total_count = 0
         self.clients_contacted = []
@@ -34,8 +35,8 @@ class Controller(object):
 
     def register_all(self):
         for client in Client.objects.filter(
-                app_label=self.app_label,
-                model_name=self.model_name,
+                app_label=self.quota.app_label,
+                model_name=self.quota.model_name,
                 is_active=True):
             self.register(client)
 
