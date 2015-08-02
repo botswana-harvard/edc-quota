@@ -1,14 +1,14 @@
 language: python
 python:
-  - "2.7"
+#  - "2.7"
 #  - "3.2"
 #  - "3.3"
-#  - "3.4"
+  - "3.4"
 #  - "nightly"
 env:
-  - DJANGO_VERSION=1.6
-#  - DJANGO_VERSION=1.7
-#  - DJANGO_VERSION=1.8
+#  - DJANGO_VERSION=1.6
+  - DJANGO_VERSION=1.7
+  - DJANGO_VERSION=1.8
 
 install:
   - pip install -q Django==$DJANGO_VERSION --use-mirrors
@@ -21,6 +21,7 @@ before_script:
 
 script: 
   - coverage run --source=edc_quota_client manage.py test
+  - coverage run --source=edc_quota_controller manage.py test
 
 after_success:
   - coveralls
