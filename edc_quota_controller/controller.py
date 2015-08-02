@@ -93,4 +93,4 @@ class Controller(object):
         return quota_history
 
     def put_new_client_quota(self, name):
-        pass
+        pass  # put to the tastypie quota resource on the client
