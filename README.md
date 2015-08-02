@@ -1,6 +1,6 @@
-[![Build Status](https://travis-ci.org/botswana-harvard/edc-tracker.svg?branch=develop)](https://travis-ci.org/botswana-harvard/edc-tracker)
+[![Build Status](https://travis-ci.org/botswana-harvard/edc-quota.svg?branch=develop)](https://travis-ci.org/botswana-harvard/edc-quota)
 
-[![Coverage Status](https://coveralls.io/repos/botswana-harvard/edc-tracker/badge.svg?branch=develop&service=github)](https://coveralls.io/github/botswana-harvard/edc-tracker?branch=develop)
+[![Coverage Status](https://coveralls.io/repos/botswana-harvard/edc-quota/badge.svg?branch=develop&service=github)](https://coveralls.io/github/botswana-harvard/edc-quota?branch=develop)
 
 # edc-quota
 
