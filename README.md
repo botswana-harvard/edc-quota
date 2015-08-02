@@ -17,6 +17,8 @@ Clients are disconnected from the central controller when collecting data. Go on
  
 There are two apps, `edc_quota_controller` and `edc_quota_client`.
 
+`edc_quota_controller` is only needed if you have offline clients collecting "model instances" toward an overall quota.
+
 edc_quota_client
 ----------------
 

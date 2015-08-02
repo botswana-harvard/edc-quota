@@ -19,7 +19,7 @@ class Quota(models.Model):
 
     model_count = models.IntegerField(default=0)
 
-    target = models.IntegerField(default=0)
+    target = models.IntegerField()
 
     expires_datetime = models.DateTimeField()
 
@@ -46,7 +46,7 @@ class QuotaMixin(object):
 
     @property
     def quota_reached(self):
-        """Returns True if the instance count is greater than the quota for this model.
+        """Returns True if the model instance count is greater than the quota target for this model.
 
         - called from the save method;
         - ignores existing instances;
