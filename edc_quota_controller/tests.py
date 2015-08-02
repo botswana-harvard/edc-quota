@@ -71,7 +71,7 @@ class TestController(TestCase):
         controller = Controller(self.quota)
         self.assertEqual(Client.objects.all().count() - 1, len(controller.clients))
 
-    def test_update_from_dummy_clients_contacted(self):
+    def test_clients_contacted(self):
         controller = DummyController(self.quota)
         controller.get_all()
         quota_history = QuotaHistory.objects.filter(quota=controller.quota).last()
@@ -80,4 +80,9 @@ class TestController(TestCase):
         self.assertEqual(clients_contacted, [c.name for c in Client.objects.all().order_by('hostname')])
         self.assertGreater(len(clients_contacted), 0)
 
-    
+    def test_quota_history(self):
+        controller = DummyController(self.quota)
+        controller.get_all()
+        quota_history = QuotaHistory.objects.filter(quota=controller.quota).last()
+        self.assertEqual(quota_history.total_count, 5 * len(quota_history.clients_contacted.split(',')))
+        self.assertEqual(quota_history.last_contact, controller.last_contact)
