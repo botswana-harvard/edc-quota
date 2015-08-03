@@ -77,7 +77,7 @@ class Client(models.Model):
 
     expires_datetime = models.DateTimeField(null=True)
 
-    is_active = models.BooleanField()
+    is_active = models.BooleanField(default=True)
 
     def __str__(self):
         return "{}".format(self.hostname)
