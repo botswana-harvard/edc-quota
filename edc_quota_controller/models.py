@@ -13,7 +13,9 @@ class Quota(models.Model):
 
     expires_datetime = models.DateTimeField()
 
-    max_allocation = models.IntegerField(null=True)
+    max_allocation = models.IntegerField(
+        blank=True,
+        null=True)
 
     is_active = models.BooleanField(default=True)
 
@@ -31,17 +33,26 @@ class QuotaHistory(models.Model):
 
     quota = models.ForeignKey(Quota)
 
-    model_count = models.IntegerField(default=0)
+    model_count = models.IntegerField(
+        editable=False,
+        default=0)
 
     clients_contacted = models.CharField(
         max_length=500,
+        editable=False,
         null=True)
 
-    expires_datetime = models.DateTimeField(null=True)
+    expires_datetime = models.DateTimeField(
+        editable=False,
+        null=True)
 
-    last_contact = models.DateTimeField(null=True)
+    last_contact = models.DateTimeField(
+        editable=False,
+        null=True)
 
-    quota_datetime = models.DateTimeField(default=timezone.now)
+    quota_datetime = models.DateTimeField(
+        editable=False,                                          
+        default=timezone.now)
 
     def __str__(self):
         return "{}".format(self.model_name)
@@ -56,6 +67,7 @@ class QuotaHistory(models.Model):
 
     class Meta:
         app_label = 'edc_quota_controller'
+        ordering = ('-quota_datetime', )
 
 
 class Client(models.Model):
@@ -71,11 +83,17 @@ class Client(models.Model):
 
     api_name = models.CharField(max_length=25, default='v1')
 
-    last_contact = models.DateTimeField(null=True)
+    last_contact = models.DateTimeField(
+        editable=False,
+        null=True)
 
-    target = models.IntegerField(default=0)
+    target = models.IntegerField(
+        editable=False,
+        default=0)
 
-    expires_datetime = models.DateTimeField(null=True)
+    expires_datetime = models.DateTimeField(
+        editable=False,
+        null=True)
 
     is_active = models.BooleanField(default=True)
 
