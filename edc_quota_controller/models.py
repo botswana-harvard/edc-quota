@@ -13,6 +13,8 @@ class Quota(models.Model):
 
     expires_datetime = models.DateTimeField()
 
+    max_allocation = models.IntegerField(null=True)
+
     is_active = models.BooleanField(default=True)
 
     def __str__(self):
@@ -29,13 +31,11 @@ class QuotaHistory(models.Model):
 
     quota = models.ForeignKey(Quota)
 
-    total_count = models.IntegerField(default=0)
+    model_count = models.IntegerField(default=0)
 
     clients_contacted = models.CharField(
         max_length=500,
         null=True)
-
-    target = models.IntegerField(null=True)
 
     expires_datetime = models.DateTimeField(null=True)
 
@@ -45,6 +45,14 @@ class QuotaHistory(models.Model):
 
     def __str__(self):
         return "{}".format(self.model_name)
+
+    @property
+    def clients_contacted_list(self):
+        try:
+            clients_contacted = self.clients_contacted.split(',')
+        except AttributeError:
+            clients_contacted = []
+        return clients_contacted
 
     class Meta:
         app_label = 'edc_quota_controller'

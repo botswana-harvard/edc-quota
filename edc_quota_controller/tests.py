@@ -12,6 +12,7 @@ from tastypie.utils import make_naive
 from edc_quota_client.models import QuotaMixin
 from edc_quota_controller.models import Client, QuotaHistory, Quota
 from edc_quota_controller.controller import Controller
+from collections import defaultdict
 
 tz = pytz.timezone(settings.TIME_ZONE)
 
@@ -21,7 +22,7 @@ class DummyController(Controller):
     def get_client_model_count(self, name):
         return 5
 
-    def put_new_client_quota(self, name):
+    def put_client_quota(self, name):
         pass
 
 
@@ -87,15 +88,69 @@ class TestController(TestCase):
         controller = DummyController(self.quota)
         controller.get_all()
         quota_history = QuotaHistory.objects.filter(quota=controller.quota).last()
-        self.assertEqual(quota_history.total_count, 5 * len(quota_history.clients_contacted.split(',')))
-        self.assertEqual(quota_history.last_contact, controller.last_contact)
+        self.assertEqual(quota_history.model_count, 5 * len(quota_history.clients_contacted.split(',')))
+        self.assertIsNotNone(quota_history.last_contact)
 
     def test_put_all(self):
         controller = DummyController(self.quota)
         controller.get_all()
         controller.put_all()
-        quota_history = QuotaHistory.objects.filter(quota=controller.quota).last()
         for client in Client.objects.all():
-            self.assertEqual(client.last_contact, controller.last_contact)
-            self.assertEqual(client.target, quota_history.target)
-            self.assertEqual(client.expires_datetime, quota_history.expires_datetime)
+            self.assertEqual(client.last_contact, controller.quota_history.last_contact)
+            self.assertEqual(client.target, 0)
+            self.assertEqual(client.expires_datetime, controller.quota_history.expires_datetime)
+        controller = DummyController(self.quota)
+        controller.quota.target = 100
+        controller.get_all()
+        controller.put_all()
+        for client in Client.objects.all():
+            self.assertEqual(client.last_contact, controller.quota_history.last_contact)
+            self.assertGreaterEqual(client.target, 5)
+            self.assertEqual(client.expires_datetime, controller.quota_history.expires_datetime)
+
+    def test_target1(self):
+        clients = defaultdict(int)
+        controller = DummyController(self.quota)
+        controller.quota.target = 95
+        controller.quota.model_count = 50
+        allocation = controller.quota.target - controller.quota.model_count
+        client_count = 6
+        remainder = allocation % client_count if allocation > 0 else 0
+        for name in ['a', 'b', 'c', 'd', 'e', 'f']:
+            target, remainder = controller.target(allocation, client_count, remainder)
+            clients[name] = target
+        self.assertEqual(sum(clients.values()), allocation)
+
+    def test_target2(self):
+        clients = defaultdict(int)
+        controller = DummyController(self.quota)
+        controller.quota.target = 95
+        controller.quota.model_count = 37
+        allocation = controller.quota.target - controller.quota.model_count
+        client_count = 7
+        remainder = allocation % client_count if allocation > 0 else 0
+        for name in ['a', 'b', 'c', 'd', 'e', 'f', 'g']:
+            target, remainder = controller.target(allocation, client_count, remainder)
+            clients[name] = target
+        self.assertEqual(sum(clients.values()), allocation)
+
+    def test_target_if_negative(self):
+        clients = defaultdict(int)
+        controller = DummyController(self.quota)
+        controller.quota.target = 95
+        controller.quota.model_count = 100
+        allocation = controller.quota.target - controller.quota.model_count
+        client_count = 6
+        remainder = allocation % client_count if allocation > 0 else 0
+        for name in ['a', 'b', 'c', 'd', 'e', 'f']:
+            target, remainder = controller.target(allocation, client_count, remainder)
+            clients[name] = target
+        self.assertEqual(sum(clients.values()), 0)
+
+    def test_set_new_target(self):
+        controller = DummyController(self.quota)
+        controller.quota.target = 100
+        controller.get_all()
+        allocation = controller.quota.target - controller.quota_history.model_count
+        sum([client.target for client in controller.clients.values()])
+        self.assertEqual(sum([client.target for client in controller.clients.values()]), allocation)

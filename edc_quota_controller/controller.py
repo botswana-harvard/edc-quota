@@ -17,6 +17,7 @@ class Controller(object):
 
     """
     def __init__(self, quota=None, app_label=None, model_name=None):
+        self.clients = {}
         if quota:
             self.quota = Quota.objects.get(
                 pk=quota.pk,
@@ -28,11 +29,9 @@ class Controller(object):
                 model_name=model_name,
                 is_active=True,
                 expires_datetime__gte=timezone.now())
-        self.clients = {}
-        self.last_contact = None
-        self.total_count = 0
-        self._quota_history = None
-        self.clients_contacted = []
+        self.quota_history = QuotaHistory.objects.create(
+            quota=self.quota,
+            expires_datetime=timezone.now() + timedelta(days=1))
         self.register_all()
 
     def register_all(self):
@@ -47,22 +46,26 @@ class Controller(object):
 
     def get_all(self):
         """Contacts all registered clients and updates the Quota model."""
-        self.last_contact = timezone.now()
-        self.total_count = 0
-        self.clients_contacted = []
+        last_contact = timezone.now()
+        total_model_count = 0
+        clients_contacted = []
         for name in self.clients:
             self.clients.get(name).model_count = self.get_client_model_count(name)
             if self.clients.get(name).model_count:
-                self.clients.get(name).last_contact = self.last_contact
-                self.total_count += self.clients.get(name).model_count
-                self.clients_contacted.append(name)
+                self.clients.get(name).last_contact = last_contact
+                total_model_count += self.clients.get(name).model_count
+                clients_contacted.append(name)
             self.clients.get(name).save()
-        QuotaHistory.objects.create(
-            quota=self.quota,
-            total_count=self.total_count,
-            last_contact=self.last_contact,
-            clients_contacted=','.join(self.clients_contacted),
-        )
+        self.quota_history.model_count = total_model_count
+        self.quota_history.last_contact = last_contact
+        self.quota_history.clients_contacted = ','.join(clients_contacted)
+        self.quota_history.save()
+        self.set_new_targets()
+
+    def put_all(self):
+        """Puts the new quota targets on the clients."""
+        for name in self.quota_history.clients_contacted_list:
+            self.put_client_quota(name)
 
     def get_client_model_count(self, name):
         """Fetches one clients model_count over the REST api."""
@@ -74,34 +77,24 @@ class Controller(object):
             model_count = None
         return model_count
 
-    def put_all(self):
-        """Puts the new quota targets on the clients."""
-        try:
-            self.clients_contacted = self.quota_history.clients_contacted.split(',')
-        except AttributeError:
-            self.clients_contacted = []
-        for name in self.clients_contacted:
-            self.clients.get(name).target = self.quota_history.target
+    def set_new_targets(self):
+        """Calculates new quota targets for all contacted clients."""
+        allocation = self.quota.target - self.quota_history.model_count
+        client_count = len(self.quota_history.clients_contacted_list)
+        remainder = allocation % client_count if allocation > 0 else 0
+        for name in self.quota_history.clients_contacted_list:
+            self.clients.get(name).target, remainder = self.target(allocation, client_count, remainder)
             self.clients.get(name).expires_datetime = self.quota_history.expires_datetime
             self.clients.get(name).save()
-            self.put_new_client_quota(name)
 
-    def quota_history(self):
-        """Calculates new targets, updates QuotaHistory and returns the new QuotaHistory instance."""
-        if not self._quota_history:
-            self._quota_history = QuotaHistory.objects.create(quota=self.quota)
-            self._quota_history.target = self.quota_target()
-            self._quota_history.expires_datetime = self.expires_datetime()
-            self._quota_history.save()
-            self._quota_history = QuotaHistory.objects.get(pk=self._quota_history.pk)
-        return self._quota_history
+    def target(self, allocation, client_count, remainder):
+        if allocation <= 0 or client_count == 0:
+            return 0, 0
+        extra = 0
+        if remainder > 0:
+            remainder -= 1
+            extra = 1
+        return int(allocation / client_count) + extra, remainder
 
-    def quota_target(self):
-        """Calculates new quota targets for all contacted clients."""
-        return -1
-
-    def expires_datetime(self):
-        return timezone.now() + timedelta(days=1)
-
-    def put_new_client_quota(self, name):
+    def put_client_quota(self, name):
         pass  # put to the tastypie quota resource on the client
