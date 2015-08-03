@@ -247,3 +247,15 @@ class QuotaResourceTest(ResourceTestCase):
             'quota_datetime': make_naive(self.quota.quota_datetime).isoformat(),
             'resource_uri': '/api/v1/quota/{0}/'.format(self.quota.pk)
         })
+
+    def test_put_detail_unauthenticated(self):
+        """Asset the api does put"""
+        resource_data = {
+            'target': 100,
+            'model_count': 2,
+            'app_label': 'edc_quota_client',
+            'model_name': 'TestQuotaModel',
+            'quota_datetime': make_naive(self.quota.quota_datetime).isoformat(),
+            'resource_uri': '/api/v1/quota/'
+        }
+        self.assertHttpUnauthorized(self.api_client.put('/api/v1/quota/', format='json', data=resource_data))
