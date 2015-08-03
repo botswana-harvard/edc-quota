@@ -4,3 +4,4 @@ unipath>=1.1
 requests>=2.7.0
 -e git+https://github.com/django-tastypie/django-tastypie#egg=TastyPie
 factory_boy==2.4.1
+pytz

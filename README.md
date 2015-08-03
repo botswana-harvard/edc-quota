@@ -99,6 +99,5 @@ Todo
 -----
 
 - allow client quota resource to accept put
-- calculate new quotas targets for clients in the controller before "put'
 
  
