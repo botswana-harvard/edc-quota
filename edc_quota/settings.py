@@ -14,6 +14,10 @@ https://docs.djangoproject.com/en/1.8/ref/settings/
 import os
 from unipath import Path
 
+import django
+
+django_version = django.get_version()
+
 # BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BASE_DIR = Path(os.path.dirname(os.path.realpath(__file__)))
 
@@ -43,7 +47,7 @@ INSTALLED_APPS = (
     'edc_quota_client',
 )
 
-MIDDLEWARE_CLASSES = (
+MIDDLEWARE_CLASSES = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -52,8 +56,15 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
-)
+]
 
+if django_version.startswith('1.6'):
+    MIDDLEWARE_CLASSES.remove('django.middleware.security.SecurityMiddleware')
+    MIDDLEWARE_CLASSES.remove('django.contrib.auth.middleware.SessionAuthenticationMiddleware')
+if django_version.startswith('1.7'):
+    MIDDLEWARE_CLASSES.remove('django.middleware.security.SecurityMiddleware')
+
+MIDDLEWARE_CLASSES = tuple(MIDDLEWARE_CLASSES)
 
 ROOT_URLCONF = 'edc_quota.urls'
 

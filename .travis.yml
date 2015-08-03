@@ -1,12 +1,12 @@
 language: python
 python:
-#  - "2.7"
+  - "2.7"
 #  - "3.2"
 #  - "3.3"
   - "3.4"
 #  - "nightly"
 env:
-#  - DJANGO_VERSION=1.6
+  - DJANGO_VERSION=1.6
   - DJANGO_VERSION=1.7
   - DJANGO_VERSION=1.8
 
@@ -17,7 +17,9 @@ install:
   - pip install -q -r requirements.txt --use-mirrors
 
 before_script:
-  - flake8 edc_tracker
+  - flake8 edc_quota
+  - flake8 edc_quota_client
+  - flake8 edc_quota_controller
 
 script: 
   - coverage run --source=edc_quota_client manage.py test
