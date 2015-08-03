@@ -51,7 +51,7 @@ class QuotaHistory(models.Model):
         null=True)
 
     quota_datetime = models.DateTimeField(
-        editable=False,                                          
+        editable=False,
         default=timezone.now)
 
     def __str__(self):
