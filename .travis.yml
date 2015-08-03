@@ -17,7 +17,9 @@ install:
   - pip install -q -r requirements.txt --use-mirrors
 
 before_script:
-  - flake8 edc_tracker
+  - flake8 edc_quota
+  - flake8 edc_quota_client
+  - flake8 edc_quota_controller
 
 script: 
   - coverage run --source=edc_quota_client manage.py test
