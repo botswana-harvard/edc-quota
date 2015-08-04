@@ -261,7 +261,6 @@ class QuotaResourceTest(ResourceTestCase):
 
     def test_post_unauthenticated(self):
         """Asset the api does put"""
-        self.assertEqual(Quota.objects.all().count(), 0)
         resource_data = {
             'target': 100,
             'model_count': 2,
