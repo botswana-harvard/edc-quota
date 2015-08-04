@@ -255,7 +255,7 @@ class QuotaResourceTest(ResourceTestCase):
             'model_count': 2,
             'app_label': 'edc_quota_client',
             'model_name': 'TestQuotaModel',
-            'quota_datetime': datetime.today(),
+            'quota_datetime': timezone.now(),
             'resource_uri': '/api/v1/quota/'
         }
         self.assertHttpUnauthorized(self.api_client.put('/api/v1/quota/', format='json', data=resource_data))
