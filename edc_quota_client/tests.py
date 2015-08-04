@@ -259,3 +259,4 @@ class QuotaResourceTest(ResourceTestCase):
             'resource_uri': '/api/v1/quota/'
         }
         self.assertHttpUnauthorized(self.api_client.put('/api/v1/quota/', data=resource_data))
+        self.assertEqual(Quota.objects.all().count(), 1)
