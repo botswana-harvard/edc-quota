@@ -82,9 +82,7 @@ class Override(object):
     
     def transform_key(self, char):
         """Generate a new character using the ascii representation of a character"""
-        p = (ord(char) + 124) % 126
-        if p < 32:
-            p = p + 31
+        p = (ord(char) + len(self.allowed_chars)) % 126
         return chr(p)
 
     def unmake_code(self, code):
@@ -106,7 +104,5 @@ class Override(object):
         return original_code
     
     def reverse_transformation(self, char):
-        p = (ord(char) - 124) % 126
-        if p < 32:
-            p = p + 95
+        p = (ord(char) - len(self.allowed_chars)) % 126
         return chr(p)
