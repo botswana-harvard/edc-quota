@@ -258,4 +258,4 @@ class QuotaResourceTest(ResourceTestCase):
             'quota_datetime': timezone.now() + timedelta(days=1),
             'resource_uri': '/api/v1/quota/'
         }
-        self.assertHttpUnauthorized(self.api_client.put('/api/v1/quota/', format='json', data=resource_data))
+        self.assertHttpUnauthorized(self.api_client.put('/api/v1/quota/', data=resource_data))
