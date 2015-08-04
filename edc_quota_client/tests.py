@@ -259,7 +259,7 @@ class QuotaResourceTest(ResourceTestCase):
             'resource_uri': '/api/v1/quota/{0}/'.format(self.quota.pk)
         })
 
-    def test_put_detail_unauthenticated(self):
+    def test_post_unauthenticated(self):
         """Asset the api does put"""
         resource_data = {
             'target': 100,
@@ -269,5 +269,5 @@ class QuotaResourceTest(ResourceTestCase):
             'quota_datetime': timezone.now() + timedelta(days=1),
             'resource_uri': '/api/v1/quota/'
         }
-        self.assertHttpUnauthorized(self.api_client.put('/api/v1/quota/', data=resource_data))
-        self.assertEqual(Quota.objects.all().count(), 1)
+        self.assertHttpUnauthorized(self.api_client.post('/api/v1/quota/', format='json', data=resource_data))
+
