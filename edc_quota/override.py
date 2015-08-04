@@ -64,31 +64,49 @@ class Override(object):
     def make_code(self, code):
         new_code = ''
         for x in code:
-            if x not in self.allowed_chars:
-                raise CodeError(
-                    'Unable to make a code from \'{}\'. '
-                    'Got invalid character {}'.format(code, x)
-                )
-            p = (ord(x) + len(code)) % 126
-            if p < 32:
-                p = p + 31
-            new_code += chr(p)
+            y = self.transform_key(x)
+            # Loop until a valid character is generated with transform key
+            while True:
+               if y in self.allowed_chars:
+                   break
+               y = self.transform_key(y)
+            new_code += y
+#             if x not in self.allowed_chars:
+#                 raise CodeError(
+#                     'Unable to make a code from \'{}\'. '
+#                     'Got invalid character {}'.format(code, x)
+#                 )
         if not new_code:
             raise CodeError('Unable to make a code from \'{}\'.'.format(code))
         return new_code
+    
+    def transform_key(self, char):
+        """Generate a new character using the ascii representation of a character"""
+        p = (ord(char) + 124) % 126
+        if p < 32:
+            p = p + 31
+        return chr(p)
 
     def unmake_code(self, code):
         original_code = ''
         for x in code:
-            if x not in self.allowed_chars:
-                raise CodeError(
-                    'Unable to determine the original code from \'{}\'. '
-                    'Got invalid character {}'.format(code, x)
-                )
-            p = (ord(x) - len(code)) % 126
-            if p < 32:
-                p = p + 95
-            original_code += chr(p)
+            y = self.reverse_transformation(x)
+            while True:
+                if y in self.allowed_chars:
+                    break
+                y = self.reverse_transformation(y)
+            original_code += y
+#             if x not in self.allowed_chars:
+#                 raise CodeError(
+#                     'Unable to determine the original code from \'{}\'. '
+#                     'Got invalid character {}'.format(code, x)
+#                 )
         if not original_code:
             raise CodeError('Unable to determine the original code from \'{}\'.'.format(code))
         return original_code
+    
+    def reverse_transformation(self, char):
+        p = (ord(char) - 124) % 126
+        if p < 32:
+            p = p + 95
+        return chr(p)
