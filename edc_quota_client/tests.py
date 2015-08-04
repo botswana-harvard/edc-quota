@@ -261,13 +261,20 @@ class QuotaResourceTest(ResourceTestCase):
 
     def test_post_unauthenticated(self):
         """Asset the api does put"""
+        resp = self.api_client.post('/api/v1/quota/', format='json', data={})
+        self.assertHttpUnauthorized(resp)
+
+    def test_post_list(self):
+        # Check how many are there first.
+        self.assertEqual(Quota.objects.count(), 1)
         resource_data = {
-            'target': 100,
-            'model_count': 2,
+            'target': 50,
+            'model_count': 3,
             'app_label': 'edc_quota_client',
             'model_name': 'TestQuotaModel',
-            'quota_datetime': timezone.now() + timedelta(days=1),
+            'quota_datetime': make_naive(self.quota.quota_datetime).isoformat(),
             'resource_uri': '/api/v1/quota/'
         }
-        self.assertHttpUnauthorized(self.api_client.post('/api/v1/quota/', format='json', data=resource_data))
-
+        self.assertHttpCreated(self.api_client.post('/api/v1/quota/', format='json', data=resource_data, authentication=self.get_credentials()))
+        # Verify a new one has been added.
+        self.assertEqual(Quota.objects.count(), 2)
