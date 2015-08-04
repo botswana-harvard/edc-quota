@@ -1,4 +1,5 @@
 import requests
+import json
 
 from datetime import timedelta
 from django.utils import timezone
@@ -97,4 +98,12 @@ class Controller(object):
         return int(allocation / client_count) + extra, remainder
 
     def put_client_quota(self, name):
-        pass  # put to the tastypie quota resource on the client
+        """Creates an instance of quota in the client."""
+        resource = Quota(
+            app_label=self.clients.get(name).app_label,
+            model_name=self.clients.get(name).model_name,
+            hostname=self.clients.get(name).hostname,
+            target=self.clients.get(name).target,
+            expires_datetime=self.clients.get(name).expires_datetime
+        )
+        request = requests.put(self.clients.get(name).url, data=resource)

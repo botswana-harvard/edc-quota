@@ -10,7 +10,6 @@ from django.contrib.auth.models import User
 from tastypie.test import ResourceTestCase
 from tastypie.utils import make_naive
 
-from edc_quota import Override
 from edc_quota_client.models import QuotaMixin, Quota, QuotaModelWithOverride
 from edc_quota_client.exceptions import QuotaReachedError
 
@@ -260,3 +259,15 @@ class QuotaResourceTest(ResourceTestCase):
             'resource_uri': '/api/v1/quota/{0}/'.format(self.quota.pk)
         })
 
+    def test_put_detail_unauthenticated(self):
+        """Asset the api does put"""
+        resource_data = {
+            'target': 100,
+            'model_count': 2,
+            'app_label': 'edc_quota_client',
+            'model_name': 'TestQuotaModel',
+            'quota_datetime': timezone.now() + timedelta(days=1),
+            'resource_uri': '/api/v1/quota/'
+        }
+        self.assertHttpUnauthorized(self.api_client.put('/api/v1/quota/', data=resource_data))
+        self.assertEqual(Quota.objects.all().count(), 1)

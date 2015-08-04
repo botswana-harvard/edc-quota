@@ -10,10 +10,9 @@ class QuotaResource(ModelResource):
         resource_name = 'quota'
         queryset = Quota.objects.all()
         fields = ['target', 'model_count', 'id', 'quota_datetime', 'app_label', 'model_name']
-        allowed_methods = ['get', 'post']
+        allowed_methods = ['get', 'post', 'put']
         filtering = {
             'app_label': ['exact'],
             'model_name': ['iexact'],
         }
-        authorization = ReadOnlyAuthorization()
         authentication = BasicAuthentication()
