@@ -9,7 +9,9 @@ from django.utils import timezone
 from django.contrib.auth.models import User
 from tastypie.test import ResourceTestCase
 from tastypie.utils import make_naive
-from edc_quota_client.models import QuotaMixin, Quota
+
+from edc_quota import Override
+from edc_quota_client.models import QuotaMixin, Quota, QuotaModelWithOverride
 from edc_quota_client.exceptions import QuotaReachedError
 
 tz = pytz.timezone(settings.TIME_ZONE)
@@ -24,6 +26,16 @@ class TestQuotaModel(QuotaMixin, models.Model):
     def save(self, *args, **kwargs):
         self.field2 = 'erik'
         super(TestQuotaModel, self).save(*args, **kwargs)
+
+    class Meta:
+        app_label = 'edc_quota_client'
+
+
+class TestQuotaOverrideModel(QuotaModelWithOverride):
+
+    field1 = models.CharField(max_length=10)
+
+    field2 = models.CharField(max_length=10)
 
     class Meta:
         app_label = 'edc_quota_client'
@@ -247,3 +259,4 @@ class QuotaResourceTest(ResourceTestCase):
             'quota_datetime': make_naive(self.quota.quota_datetime).isoformat(),
             'resource_uri': '/api/v1/quota/{0}/'.format(self.quota.pk)
         })
+

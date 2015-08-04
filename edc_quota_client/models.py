@@ -1,7 +1,8 @@
 from django.db import models
 from django.utils import timezone
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
+from edc_quota import Override, OverrideError
 
 from .exceptions import QuotaReachedError
 
@@ -64,6 +65,44 @@ class QuotaMixin(object):
             quota_reached = True
         self.quota_pk = quota.pk
         return quota_reached
+
+
+class QuotaModelWithOverride(QuotaMixin, models.Model):
+
+    override_code = models.CharField(
+        max_length=10,
+        blank=True,
+        null=True,
+        editable=False,
+        # help_text='override code to be used by a central source to create a confirmation code.'
+    )
+
+    confirmation_code = models.CharField(
+        max_length=10,
+        blank=True,
+        null=True,
+        # help_text='confirmation code received from central source'
+    )
+
+    def save(self, *args, **kwargs):
+        if self.quota_reached:
+            try:
+                self.override_quota()
+            except OverrideError as err:
+                raise QuotaReachedError(
+                    'Quota for model {} has been reached. Got {}'.format(
+                        self.__class__.__name__, str(err)))
+        super(QuotaMixin, self).save(*args, **kwargs)
+
+    def override_quota(self, exception_cls=None):
+        exception_cls = exception_cls or OverrideError
+        override = Override(self.override_code, self.confirmation_code)
+        if not override.validate_combination():
+            raise exception_cls(override.error_message)
+        return None
+
+    class Meta:
+        abstract = True
 
 
 @receiver(post_save, weak=False, dispatch_uid="quota_on_post_save")
