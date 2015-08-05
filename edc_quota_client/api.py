@@ -9,15 +9,7 @@ class QuotaResource(ModelResource):
     class Meta:
         resource_name = 'quota'
         queryset = Quota.objects.all()
-        fields = [
-            'target',
-            'model_count',
-            'id',
-            'quota_datetime',
-            'app_label',
-            'model_name',
-            'expires_datetime'
-        ]
+        fields = ['target', 'model_count', 'id', 'quota_datetime', 'app_label', 'model_name', 'expires_datetime']
         list_allowed_methods = ['get', 'post']
         detail_allowed_methods = ['get', 'post', 'put']
         filtering = {
