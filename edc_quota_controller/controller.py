@@ -1,10 +1,11 @@
 import requests
-import json
+from requests_oauthlib import OAuth1
 
 from datetime import timedelta
 from django.utils import timezone
 
 from .models import Client, Quota, QuotaHistory
+from django.core.exceptions import ValidationError
 
 
 class Controller(object):
@@ -17,8 +18,9 @@ class Controller(object):
         controller.put_all()
 
     """
-    def __init__(self, quota=None, app_label=None, model_name=None):
+    def __init__(self, quota=None, app_label=None, model_name=None, api_key=None):
         self.clients = {}
+        self.auth = OAuth1('api_key', api_key)
         if quota:
             self.quota = Quota.objects.get(
                 pk=quota.pk,
@@ -66,7 +68,7 @@ class Controller(object):
     def put_all(self):
         """Puts the new quota targets on the clients."""
         for name in self.quota_history.clients_contacted_list:
-            self.put_client_quota(name)
+            self.post_client_quota(name)
 
     def get_client_model_count(self, name):
         """Fetches one clients model_count over the REST api."""
@@ -97,13 +99,19 @@ class Controller(object):
             extra = 1
         return int(allocation / client_count) + extra, remainder
 
-    def put_client_quota(self, name):
+    def post_client_quota(self, name):
         """Creates an instance of quota in the client."""
-        resource = Quota(
-            app_label=self.clients.get(name).app_label,
-            model_name=self.clients.get(name).model_name,
-            hostname=self.clients.get(name).hostname,
-            target=self.clients.get(name).target,
-            expires_datetime=self.clients.get(name).expires_datetime
-        )
-        request = requests.put(self.clients.get(name).url, data=resource)
+        resource_data = {
+            'app_label': self.clients.get(name).app_label,
+            'model_name': self.clients.get(name).model_name,
+            'target': self.clients.get(name).target,
+            'expires_datetime': self.clients.get(name).expires_datetime
+        }
+        if self.auth:
+            requests.post(
+                self.clients.get(name).url,
+                data=resource_data,
+                auth=self.auth
+            )
+        else:
+            raise ValidationError("Pass authentications details. Got {}.".format(self.auth))
