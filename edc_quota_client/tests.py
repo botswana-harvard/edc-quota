@@ -235,6 +235,7 @@ class QuotaResourceTest(ResourceTestCase):
             'app_label': 'edc_quota_client',
             'model_name': 'TestQuotaModel',
             'quota_datetime': make_naive(self.quota.quota_datetime).isoformat(),
+            'expires_datetime': make_naive(self.quota.expires_datetime).isoformat(),
             'resource_uri': '/api/v1/quota/{0}/'.format(self.quota.pk)
         })
 
@@ -254,27 +255,42 @@ class QuotaResourceTest(ResourceTestCase):
             'target': 100,
             'model_count': 2,
             'app_label': 'edc_quota_client',
+            'expires_datetime': make_naive(self.quota.expires_datetime).isoformat(),
             'model_name': 'TestQuotaModel',
             'quota_datetime': make_naive(self.quota.quota_datetime).isoformat(),
             'resource_uri': '/api/v1/quota/{0}/'.format(self.quota.pk)
         })
 
     def test_post_unauthenticated(self):
-        """Asset the api does put"""
+        """Assert the api does put"""
         resp = self.api_client.post('/api/v1/quota/', format='json', data={})
         self.assertHttpUnauthorized(resp)
 
     def test_post_list(self):
         # Check how many are there first.
-        self.assertEqual(Quota.objects.count(), 1)
+        Quota.objects.all().delete()
+        quota = Quota.objects.create(
+            app_label=TestQuotaModel._meta.app_label,
+            model_name=TestQuotaModel._meta.object_name,
+            expires_datetime=timezone.now() + timedelta(days=1),
+            target=100
+        )
         resource_data = {
             'target': 50,
             'model_count': 3,
             'app_label': 'edc_quota_client',
             'model_name': 'TestQuotaModel',
             'quota_datetime': make_naive(self.quota.quota_datetime).isoformat(),
+            'expires_datetime': make_naive(self.quota.expires_datetime).isoformat(),
             'resource_uri': '/api/v1/quota/'
         }
-        self.assertHttpCreated(self.api_client.post('/api/v1/quota/', format='json', data=resource_data, authentication=self.get_credentials()))
+        self.assertHttpCreated(
+            self.api_client.post(
+                '/api/v1/quota/',
+                format='json',
+                data=resource_data,
+                authentication=self.get_credentials()
+            )
+        )
         # Verify a new one has been added.
         self.assertEqual(Quota.objects.count(), 2)
