@@ -1,6 +1,10 @@
 from tastypie.resources import ModelResource
 from tastypie.authorization import Authorization
-from tastypie.authentication import ApiKeyAuthentication, BasicAuthentication
+from tastypie.authentication import (
+        ApiKeyAuthentication,
+        BasicAuthentication,
+        MultiAuthentication
+    )
 from .models import Quota
 
 
@@ -9,7 +13,15 @@ class QuotaResource(ModelResource):
     class Meta:
         resource_name = 'quota'
         queryset = Quota.objects.all()
-        fields = ['target', 'model_count', 'id', 'quota_datetime', 'app_label', 'model_name', 'expires_datetime']
+        fields = [
+            'target',
+            'model_count',
+            'id',
+            'quota_datetime',
+            'app_label',
+            'model_name',
+            'expires_datetime'
+        ]
         list_allowed_methods = ['get', 'post']
         detail_allowed_methods = ['get', 'post', 'put']
         filtering = {
@@ -17,5 +29,7 @@ class QuotaResource(ModelResource):
             'model_name': ['iexact'],
         }
         authorization = Authorization()
-#         authentication = ApiKeyAuthentication()
-        authentication = BasicAuthentication()
+        authentication = MultiAuthentication(
+            BasicAuthentication(),
+            ApiKeyAuthentication()
+        )
