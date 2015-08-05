@@ -1,11 +1,12 @@
 import requests
-import json
+# from requests_oauthlib import OAuth1
 
 from datetime import timedelta
 from django.utils import timezone
 
 
 from .models import Client, Quota, QuotaHistory
+from django.core.exceptions import ValidationError
 
 
 class Controller(object):
@@ -18,8 +19,9 @@ class Controller(object):
         controller.put_all()
 
     """
-    def __init__(self, quota=None, app_label=None, model_name=None):
+    def __init__(self, quota=None, app_label=None, model_name=None, api_key=None):
         self.clients = {}
+#         self.auth = OAuth1('api_key', api_key)
         if quota:
             self.quota = Quota.objects.get(
                 pk=quota.pk,
@@ -106,4 +108,12 @@ class Controller(object):
 
     def put_client_quota(self, name, data):
         """Creates an instance of quota in the client."""
-        requests.put(self.clients.get(name).post_url, data=data)
+        requests.post(self.clients.get(name).post_url, data=data)
+#         if self.auth:
+#             requests.post(
+#                 self.clients.get(name).url,
+#                 data=resource_data,
+#                 auth=self.auth
+#             )
+#         else:
+#             raise ValidationError("Pass authentications details. Got {}.".format(self.auth))
