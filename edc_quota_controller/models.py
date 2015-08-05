@@ -3,7 +3,12 @@ from django.utils import timezone
 
 
 class Quota(models.Model):
-    """Controllers quota model."""
+    """Controllers quota model where each instance refers to a quota that
+    this controller is managing. 
+
+    For example, a quota on the controller might be an enrollment cap
+    (target) of 3000 applied to the model
+    subject.Enrollment."""
 
     app_label = models.CharField(max_length=25)
 
@@ -27,7 +32,10 @@ class Quota(models.Model):
 
 
 class QuotaHistory(models.Model):
-    """Controllers quota history model."""
+    """Controllers quota history model.
+
+    A new instance is created each time the controller updates quotas on
+    the client for 'quota'."""
 
     get_latest_by = "quota_datetime"
 
@@ -104,6 +112,11 @@ class Client(models.Model):
     def url(self):
         return 'http://{}:{}/api/{}/?app_label={}&model_name={}&format=json'.format(
             self.hostname, self.port, self.api_name, self.app_label, self.model_name)
+
+    @property
+    def post_url(self):
+        return 'http://{}:{}/api/{}/'.format(
+            self.hostname, self.port, self.api_name, self.model_name.lower())
 
     @property
     def name(self):
