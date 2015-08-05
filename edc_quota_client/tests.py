@@ -267,7 +267,7 @@ class QuotaResourceTest(ResourceTestCase):
         self.assertHttpUnauthorized(resp)
 
     def test_post_list(self):
-        # Check how many are there first.
+        """Asserts api can be used to create a new Quota instance."""
         Quota.objects.all().delete()
         quota = Quota.objects.create(
             app_label=TestQuotaModel._meta.app_label,
@@ -280,8 +280,8 @@ class QuotaResourceTest(ResourceTestCase):
             'model_count': 3,
             'app_label': 'edc_quota_client',
             'model_name': 'TestQuotaModel',
-            'quota_datetime': make_naive(self.quota.quota_datetime).isoformat(),
-            'expires_datetime': make_naive(self.quota.expires_datetime).isoformat(),
+            'quota_datetime': make_naive(quota.quota_datetime).isoformat(),
+            'expires_datetime': make_naive(quota.expires_datetime).isoformat(),
             'resource_uri': '/api/v1/quota/'
         }
         self.assertHttpCreated(
