@@ -25,9 +25,4 @@ class QuotaResource(ModelResource):
             'model_name': ['iexact'],
         }
         authorization = Authorization()
-#         authentication = MultiAuthentication(
-#             BasicAuthentication(),
-#             ApiKeyAuthentication()
-#         )
-
         authentication = BasicAuthentication()
