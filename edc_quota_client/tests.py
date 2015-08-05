@@ -266,7 +266,7 @@ class QuotaResourceTest(ResourceTestCase):
         resp = self.api_client.post('/api/v1/quota/', format='json', data={})
         self.assertHttpUnauthorized(resp)
 
-    def test_post_list(self):
+    def test_api_post_list(self):
         """Asserts api can be used to create a new Quota instance."""
         Quota.objects.all().delete()
         quota = Quota.objects.create(
@@ -292,5 +292,4 @@ class QuotaResourceTest(ResourceTestCase):
                 authentication=self.get_credentials()
             )
         )
-        # Verify a new one has been added.
         self.assertEqual(Quota.objects.count(), 2)
