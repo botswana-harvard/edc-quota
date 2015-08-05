@@ -265,31 +265,3 @@ class QuotaResourceTest(ResourceTestCase):
         """Assert the api does put"""
         resp = self.api_client.post('/api/v1/quota/', format='json', data={})
         self.assertHttpUnauthorized(resp)
-
-    def test_api_post_list(self):
-        """Asserts api can be used to create a new Quota instance."""
-        Quota.objects.all().delete()
-        quota = Quota.objects.create(
-            app_label=TestQuotaModel._meta.app_label,
-            model_name=TestQuotaModel._meta.object_name,
-            expires_datetime=timezone.now() + timedelta(days=1),
-            target=100
-        )
-        resource_data = {
-            'target': 50,
-            'model_count': 3,
-            'app_label': 'edc_quota_client',
-            'model_name': 'TestQuotaModel',
-            'quota_datetime': make_naive(quota.quota_datetime).isoformat(),
-            'expires_datetime': make_naive(quota.expires_datetime).isoformat(),
-            'resource_uri': '/api/v1/quota/'
-        }
-        self.assertHttpCreated(
-            self.api_client.post(
-                '/api/v1/quota/',
-                format='json',
-                data=resource_data,
-                authentication=self.get_credentials()
-            )
-        )
-        self.assertEqual(Quota.objects.count(), 2)

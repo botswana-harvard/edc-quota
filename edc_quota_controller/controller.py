@@ -4,6 +4,7 @@ import json
 from datetime import timedelta
 from django.utils import timezone
 
+
 from .models import Client, Quota, QuotaHistory
 
 
@@ -66,7 +67,13 @@ class Controller(object):
     def put_all(self):
         """Puts the new quota targets on the clients."""
         for name in self.quota_history.clients_contacted_list:
-            self.put_client_quota(name)
+            data = dict(
+                app_label=self.clients.get(name).app_label,
+                model_name=self.clients.get(name).model_name,
+                target=self.clients.get(name).target,
+                expires_datetime=self.clients.get(name).expires_datetime
+            )
+            self.put_client_quota(name, data)
 
     def get_client_model_count(self, name):
         """Fetches one clients model_count over the REST api."""
@@ -97,13 +104,6 @@ class Controller(object):
             extra = 1
         return int(allocation / client_count) + extra, remainder
 
-    def put_client_quota(self, name):
+    def put_client_quota(self, name, data):
         """Creates an instance of quota in the client."""
-        resource = Quota(
-            app_label=self.clients.get(name).app_label,
-            model_name=self.clients.get(name).model_name,
-            hostname=self.clients.get(name).hostname,
-            target=self.clients.get(name).target,
-            expires_datetime=self.clients.get(name).expires_datetime
-        )
-        request = requests.put(self.clients.get(name).url, data=resource)
+        requests.put(self.clients.get(name).post_url, data=data)
