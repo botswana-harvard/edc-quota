@@ -16,7 +16,7 @@ class Controller(object):
         quota = Quota.objects.get(...)
         controller = Controller(quota)
         controller.get_all()
-        controller.put_all()
+        controller.post_all()
 
     """
     def __init__(self, quota=None, app_label=None, model_name=None, api_key=None):
@@ -66,8 +66,8 @@ class Controller(object):
         self.quota_history.save()
         self.set_new_targets()
 
-    def put_all(self):
-        """Puts the new quota targets on the clients."""
+    def post_all(self):
+        """posts the new quota targets on the clients."""
         for name in self.quota_history.clients_contacted_list:
             data = dict(
                 app_label=self.clients.get(name).app_label,
@@ -75,7 +75,7 @@ class Controller(object):
                 target=self.clients.get(name).target,
                 expires_datetime=self.clients.get(name).expires_datetime
             )
-            self.put_client_quota(name, data)
+            self.post_client_quota(name, data)
 
     def get_client_model_count(self, name):
         """Fetches one clients model_count over the REST api."""
@@ -106,14 +106,6 @@ class Controller(object):
             extra = 1
         return int(allocation / client_count) + extra, remainder
 
-    def put_client_quota(self, name, data):
+    def post_client_quota(self, name, data):
         """Creates an instance of quota in the client."""
         requests.post(self.clients.get(name).post_url, data=data)
-#         if self.auth:
-#             requests.post(
-#                 self.clients.get(name).url,
-#                 data=resource_data,
-#                 auth=self.auth
-#             )
-#         else:
-#             raise ValidationError("Pass authentications details. Got {}.".format(self.auth))

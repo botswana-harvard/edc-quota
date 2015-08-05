@@ -22,13 +22,13 @@ class DummyController(Controller):
     def get_client_model_count(self, name):
         return 5
 
-    def put_client_quota(self, name, data):
+    def post_client_quota(self, name, data):
         pass
 
 
 class DummyControllerWithPut(Controller):
 
-    def put_client_quota(self, name, data):
+    def post_client_quota(self, name, data):
         self.api_client.post(
             self.client[name].post_url,
             format='json',
@@ -102,10 +102,10 @@ class TestController(TestCase):
         self.assertEqual(quota_history.model_count, 5 * len(quota_history.clients_contacted.split(',')))
         self.assertIsNotNone(quota_history.last_contact)
 
-    def test_put_all(self):
+    def test_post_all(self):
         controller = DummyController(self.quota)
         controller.get_all()
-        controller.put_all()
+        controller.post_all()
         for client in Client.objects.all():
             self.assertEqual(client.last_contact, controller.quota_history.last_contact)
             self.assertEqual(client.target, 0)
@@ -113,7 +113,7 @@ class TestController(TestCase):
         controller = DummyController(self.quota)
         controller.quota.target = 100
         controller.get_all()
-        controller.put_all()
+        controller.post_all()
         for client in Client.objects.all():
             self.assertEqual(client.last_contact, controller.quota_history.last_contact)
             self.assertGreaterEqual(client.target, 5)
