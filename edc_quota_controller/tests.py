@@ -9,7 +9,7 @@ from django.utils import timezone
 from django.contrib.auth.models import User
 from tastypie.test import ResourceTestCase
 from tastypie.utils import make_naive
-from edc_quota_client.models import QuotaMixin
+from edc_quota_client.models import QuotaMixin, Quota as ClientQuota
 from edc_quota_controller.models import Client, QuotaHistory, Quota
 from edc_quota_controller.controller import Controller
 from collections import defaultdict
@@ -22,8 +22,19 @@ class DummyController(Controller):
     def get_client_model_count(self, name):
         return 5
 
-    def put_client_quota(self, name):
+    def post_client_quota(self, name, data):
         pass
+
+
+class DummyControllerWithPut(Controller):
+
+    def post_client_quota(self, name, data):
+        self.api_client.post(
+            self.client[name].post_url,
+            format='json',
+            data=data,
+            authentication=self.get_credentials()
+        )
 
 
 class TestQuotaModel(QuotaMixin, models.Model):
@@ -91,10 +102,10 @@ class TestController(TestCase):
         self.assertEqual(quota_history.model_count, 5 * len(quota_history.clients_contacted.split(',')))
         self.assertIsNotNone(quota_history.last_contact)
 
-    def test_put_all(self):
+    def test_post_all(self):
         controller = DummyController(self.quota)
         controller.get_all()
-        controller.put_all()
+        controller.post_all()
         for client in Client.objects.all():
             self.assertEqual(client.last_contact, controller.quota_history.last_contact)
             self.assertEqual(client.target, 0)
@@ -102,7 +113,7 @@ class TestController(TestCase):
         controller = DummyController(self.quota)
         controller.quota.target = 100
         controller.get_all()
-        controller.put_all()
+        controller.post_all()
         for client in Client.objects.all():
             self.assertEqual(client.last_contact, controller.quota_history.last_contact)
             self.assertGreaterEqual(client.target, 5)
@@ -154,3 +165,54 @@ class TestController(TestCase):
         allocation = controller.quota.target - controller.quota_history.model_count
         sum([client.target for client in controller.clients.values()])
         self.assertEqual(sum([client.target for client in controller.clients.values()]), allocation)
+
+
+class TestResource(ResourceTestCase):
+
+    def setUp(self):
+        super(TestResource, self).setUp()
+
+        self.username = 'erik'
+        self.password = 'pass'
+        self.user = User.objects.create_user(self.username, 'erik@example.com', self.password)
+
+        self.quota = Quota.objects.create(
+            app_label='edc_quota_controller',
+            model_name='TestQuotaModel',
+            target=3,
+            expires_datetime=timezone.now() + timedelta(days=1)
+        )
+
+        Client.objects.create(
+            hostname='erik',
+            app_label='edc_quota_controller',
+            model_name='TestQuotaModel',
+            is_active=True)
+
+    def get_credentials(self):
+        return self.create_basic(username=self.username, password=self.password)
+
+    def test_api_post_list(self):
+        """Asserts api can be used to create a new Quota instance on the client."""
+
+        self.assertEqual(ClientQuota.objects.count(), 0)
+
+        resource_data = {
+            'app_label': 'edc_quota_client',
+            'model_name': 'Quota',
+            'target': 30,
+            'expires_datetime': make_naive(timezone.now()).isoformat(),
+        }
+        self.assertHttpCreated(
+            self.api_client.post(
+                '/api/v1/quota/',
+                format='json',
+                data=resource_data,
+                authentication=self.get_credentials()
+            )
+        )
+        self.assertEqual(ClientQuota.objects.count(), 1)
+
+    def test_controller_roundtrip(self):
+        self.assertEqual(ClientQuota.objects.count(), 0)
+        controller = Controller(self.quota)
