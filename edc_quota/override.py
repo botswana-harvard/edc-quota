@@ -32,7 +32,8 @@ class Override(object):
         ShortIdentifier.prefix_pattern = ''
         self.allowed_chars = ShortIdentifier.allowed_chars
         code = code or ShortIdentifier().identifier
-        self.code, self.confirmation_code = confirmation_code or self.make_confirmation_code(code)
+        self.code, self.confirmation_code = confirmation_code or self.make_confirmation_code(
+            code)
         self.is_valid_combination = self.validate_combination()
 
     def make_confirmation_code(self, code=None):
@@ -51,7 +52,8 @@ class Override(object):
             self.error_message = 'No override code supplied'
             return False
         if not confirmation_code:
-            self.error_message = 'No confirmation code supplied for {}'.format(self.code)
+            self.error_message = 'No confirmation code supplied for {}'.format(
+                self.code)
             return False
         original_code = self.unmake_code(confirmation_code)
         is_valid = original_code == code
@@ -64,13 +66,13 @@ class Override(object):
     def make_code(self, code):
         new_code = ''
         for x in code:
-            y = self.transform_key(x)
+            new_char = self.transform_key(x)
             # Loop until a valid character is generated with transform key
             while True:
-               if y in self.allowed_chars:
-                   break
-               y = self.transform_key(y)
-            new_code += y
+                if new_char in self.allowed_chars:
+                    break
+                new_char = self.transform_key(new_char)
+            new_code += new_char
 #             if x not in self.allowed_chars:
 #                 raise CodeError(
 #                     'Unable to make a code from \'{}\'. '
@@ -79,30 +81,31 @@ class Override(object):
         if not new_code:
             raise CodeError('Unable to make a code from \'{}\'.'.format(code))
         return new_code
-    
+
     def transform_key(self, char):
         """Generate a new character using the ascii representation of a character"""
-        p = (ord(char) + len(self.allowed_chars)) % 126
-        return chr(p)
+        ascii_num = (ord(char) + len(self.allowed_chars)) % 126
+        return chr(ascii_num)
 
     def unmake_code(self, code):
         original_code = ''
         for x in code:
-            y = self.reverse_transformation(x)
+            new_char = self.reverse_transformation(x)
             while True:
-                if y in self.allowed_chars:
+                if new_char in self.allowed_chars:
                     break
-                y = self.reverse_transformation(y)
-            original_code += y
+                new_char = self.reverse_transformation(new_char)
+            original_code += new_char
 #             if x not in self.allowed_chars:
 #                 raise CodeError(
 #                     'Unable to determine the original code from \'{}\'. '
 #                     'Got invalid character {}'.format(code, x)
 #                 )
         if not original_code:
-            raise CodeError('Unable to determine the original code from \'{}\'.'.format(code))
+            raise CodeError(
+                'Unable to determine the original code from \'{}\'.'.format(code))
         return original_code
-    
+
     def reverse_transformation(self, char):
-        p = (ord(char) - len(self.allowed_chars)) % 126
-        return chr(p)
+        ascii_num = (ord(char) - len(self.allowed_chars)) % 126
+        return chr(ascii_num)
