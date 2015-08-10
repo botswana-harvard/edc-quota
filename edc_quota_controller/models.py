@@ -4,7 +4,7 @@ from django.utils import timezone
 
 class Quota(models.Model):
     """Controllers quota model where each instance refers to a quota that
-    this controller is managing. 
+    this controller is managing.
 
     For example, a quota on the controller might be an enrollment cap
     (target) of 3000 applied to the model

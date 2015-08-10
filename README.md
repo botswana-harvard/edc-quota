@@ -98,10 +98,4 @@ The controller will register all clients associated with a defined `quota`. The 
 Recall with `edc_quota_client` a `quota` refers to a target count expected for a particular model. Unlike a `Quota` on the clients, `edc_quota_controller.Quota` on the controller does not refer to an models on the controller. Model `Quota` on the controller is a reference model of quotas that the controller manages for its clients. There is one quota instance per quota managed.
 
 Model `edc_quota_controller.quota_history` is added to each time the controller updates the quota on its clients.
-
-Todo
------
-
-- allow client quota resource to accept put
-
  

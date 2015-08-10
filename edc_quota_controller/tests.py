@@ -213,6 +213,6 @@ class TestResource(ResourceTestCase):
         )
         self.assertEqual(ClientQuota.objects.count(), 1)
 
-    def test_controller_roundtrip(self):
-        self.assertEqual(ClientQuota.objects.count(), 0)
-        controller = Controller(self.quota)
+#     def test_controller_roundtrip(self):
+#         self.assertEqual(ClientQuota.objects.count(), 0)
+#         controller = Controller(self.quota)
