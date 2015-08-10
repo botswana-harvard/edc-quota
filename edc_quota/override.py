@@ -13,99 +13,84 @@ class Override(object):
     """
     Get an override code:
         >>> from edc_quota import Override
-        >>> override_code = Override().code
+        >>> override = Override()
+        >>> code = override.code
+        >>> print(code)
+        '3UFY9'
 
     Ask for a confirmation code
         >>> from edc_quota import Override
-        >>> override_code = Override(code).confirmation_code
+        >>> override = Override(code)
+        >>> confirmation_code = override.confirmation_code
+        >>> print(confirmation_code)
+        'NC4GT'
 
     Validate the pair of codes
         >>> from edc_quota import Override
-        >>> if Override('3UFY9', confirmation_code).is_valid_combination:
-        >>>>    print('Thanks, I win!')
+        >>> if Override('3UFY9', 'NC4GT').is_valid_combination:
+        >>>>    print('the codes are a valid pair')
+
     """
 
     identifier_type = 'override'
     prefix_pattern = ''
 
     def __init__(self, code=None, confirmation_code=None):
+        self._code = None
+        self.encoded = ''
+        self.decoded = ''
         ShortIdentifier.prefix_pattern = ''
         self.allowed_chars = ShortIdentifier.allowed_chars
-        code = code or ShortIdentifier().identifier
-        self.code, self.confirmation_code = confirmation_code or self.make_confirmation_code(
-            code)
-        self.is_valid_combination = self.validate_combination()
+        self.code = code or ShortIdentifier().identifier
+        if confirmation_code:
+            self.encoded = confirmation_code
+            self.decode()
+        else:
+            self.encode()
 
-    def make_confirmation_code(self, code=None):
-        """Returns a tuple of code, confirmation code where the confirmation code
-        is based on the code (override code)."""
-        self.confirmation_code = None
-        code = code or self.code
-        return code, self.make_code(code)
+    def __repr__(self):
+        return '{}(\'{}\')'.format(self.__class__.__name__, self.code)
 
-    def validate_combination(self, code=None, confirmation_code=None):
-        """Reverse the second key and compare it to the first key"""
-        self.error_message = None
-        code = code or self.code
-        confirmation_code = confirmation_code or self.confirmation_code
-        if not code:
-            self.error_message = 'No override code supplied'
-            return False
-        if not confirmation_code:
-            self.error_message = 'No confirmation code supplied for {}'.format(
-                self.code)
-            return False
-        original_code = self.unmake_code(confirmation_code)
-        is_valid = original_code == code
-        if not is_valid:
-            self.error_message = (
-                'Overide and confirmation codes do not match as a pair. Got {} and {}').format(
-                    code, confirmation_code)
-        return is_valid
+    def __str__(self):
+        return '{}'.format(self.code)
 
-    def make_code(self, code):
-        new_code = ''
-        for x in code:
-            new_char = self.transform_key(x)
-            # Loop until a valid character is generated with transform key
-            while True:
-                if new_char in self.allowed_chars:
-                    break
-                new_char = self.transform_key(new_char)
-            new_code += new_char
-#             if x not in self.allowed_chars:
-#                 raise CodeError(
-#                     'Unable to make a code from \'{}\'. '
-#                     'Got invalid character {}'.format(code, x)
-#                 )
-        if not new_code:
-            raise CodeError('Unable to make a code from \'{}\'.'.format(code))
-        return new_code
+    @property
+    def confirmation_code(self):
+        return self.encoded
 
-    def transform_key(self, char):
-        """Generate a new character using the ascii representation of a character"""
-        ascii_num = (ord(char) + len(self.allowed_chars)) % 126
-        return chr(ascii_num)
+    @property
+    def is_valid_combination(self):
+        return self.code == self.decoded
 
-    def unmake_code(self, code):
-        original_code = ''
-        for x in code:
-            new_char = self.reverse_transformation(x)
-            while True:
-                if new_char in self.allowed_chars:
-                    break
-                new_char = self.reverse_transformation(new_char)
-            original_code += new_char
-#             if x not in self.allowed_chars:
-#                 raise CodeError(
-#                     'Unable to determine the original code from \'{}\'. '
-#                     'Got invalid character {}'.format(code, x)
-#                 )
-        if not original_code:
-            raise CodeError(
-                'Unable to determine the original code from \'{}\'.'.format(code))
-        return original_code
+    @property
+    def code(self):
+        return self._code
 
-    def reverse_transformation(self, char):
-        ascii_num = (ord(char) - len(self.allowed_chars)) % 126
-        return chr(ascii_num)
+    @code.setter
+    def code(self, value):
+        self._code = value
+        self.encoded = ''
+
+    def encode(self):
+        """Encodes the 'code' instance attribute which is a short alphanumeric."""
+        if not self.encoded:
+            for c in self.code:
+                encoded_c = None
+                while True:
+                    encoded_c = chr((ord(encoded_c or c) + len(self.allowed_chars)) % 126)
+                    if encoded_c in self.allowed_chars:
+                        break
+                self.encoded += encoded_c
+            if not self.encoded:
+                raise CodeError('Unable to encode \'{}\'.'.format(self.code))
+
+    def decode(self):
+        """Decodes the 'encoded' attribute and returns a short alphanumeric encoded by this class."""
+        if self.encoded:
+            for c in self.encoded:
+                decoded_c = None
+                while True:
+                    decoded_c = chr((ord(decoded_c or c) - len(self.allowed_chars)) % 126)
+                    if decoded_c in self.allowed_chars:
+                        break
+                self.decoded += decoded_c
