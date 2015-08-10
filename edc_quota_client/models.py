@@ -73,15 +73,12 @@ class QuotaModelWithOverride(QuotaMixin, models.Model):
         max_length=10,
         blank=True,
         null=True,
-        editable=False,
-        # help_text='override code to be used by a central source to create a confirmation code.'
     )
 
     confirmation_code = models.CharField(
         max_length=10,
         blank=True,
         null=True,
-        # help_text='confirmation code received from central source'
     )
 
     def save(self, *args, **kwargs):
@@ -97,8 +94,9 @@ class QuotaModelWithOverride(QuotaMixin, models.Model):
     def override_quota(self, exception_cls=None):
         exception_cls = exception_cls or OverrideError
         override = Override(self.override_code, self.confirmation_code)
-        if not override.validate_combination():
-            raise exception_cls(override.error_message)
+        if not override.is_valid_combination:
+            raise exception_cls(
+                'Invalid code combination. Got {} and {}'.format(override.code, override.confirmation_code))
         return None
 
     class Meta:

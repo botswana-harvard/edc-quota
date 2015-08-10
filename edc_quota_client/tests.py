@@ -10,6 +10,7 @@ from django.contrib.auth.models import User
 from tastypie.test import ResourceTestCase
 from tastypie.utils import make_naive
 
+from edc_quota.override import Override
 from edc_quota_client.models import QuotaMixin, Quota, QuotaModelWithOverride
 from edc_quota_client.exceptions import QuotaReachedError
 
@@ -265,3 +266,20 @@ class QuotaResourceTest(ResourceTestCase):
         """Assert the api does put"""
         resp = self.api_client.post('/api/v1/quota/', format='json', data={})
         self.assertHttpUnauthorized(resp)
+
+    def test_override_quota(self):
+        quota = Quota.objects.create(
+            app_label='edc_quota_client',
+            model_name='TestQuotaOverrideModel',
+            target=2,
+            expires_datetime=timezone.now() + timedelta(days=1)
+        )
+        TestQuotaOverrideModel.objects.create()
+        TestQuotaOverrideModel.objects.create()
+        override = Override()
+        code = override.code
+        override = Override(code)
+        confirmation_code = override.confirmation_code
+        self.assertIsInstance(TestQuotaOverrideModel.objects.create(
+            override_code=code,
+            confirmation_code=confirmation_code), TestQuotaOverrideModel)
