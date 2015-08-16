@@ -268,7 +268,7 @@ class QuotaResourceTest(ResourceTestCase):
         self.assertHttpUnauthorized(resp)
 
     def test_override_quota(self):
-        quota = Quota.objects.create(
+        Quota.objects.create(
             app_label='edc_quota_client',
             model_name='TestQuotaOverrideModel',
             target=2,
