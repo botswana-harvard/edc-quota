@@ -1,7 +1,6 @@
 from django.contrib import admin
 
 from .models import Quota, QuotaHistory
-from django.contrib.admin.templatetags.admin_list import date_hierarchy
 from edc_quota_controller.models import Client
 
 
