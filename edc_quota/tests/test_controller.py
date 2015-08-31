@@ -6,6 +6,7 @@ from django.conf import settings
 from django.db import models
 from django.test import TestCase
 from django.utils import timezone
+from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.models import User
 from tastypie.test import ResourceTestCase
 from tastypie.utils import make_naive
@@ -118,6 +119,16 @@ class TestController(TestCase):
             self.assertEqual(client.last_contact, controller.quota_history.last_contact)
             self.assertGreaterEqual(client.target, 5)
             self.assertEqual(client.expires_datetime, controller.quota_history.expires_datetime)
+
+    def test_expired_quota(self):
+        self.quota = ControllerQuota.objects.create(
+            app_label='edc_quota_controller',
+            model_name='TestQuotaModel',
+            target=3,
+            expires_datetime=timezone.now() - timedelta(days=1)
+        )
+        with self.assertRaises(ObjectDoesNotExist):
+            DummyController(self.quota)
 
     def test_target1(self):
         clients = defaultdict(int)
