@@ -1,10 +1,10 @@
-from django.core.management.base import BaseCommand
-from edc_quota_client.models import Quota
-from edc_quota_controller.controller import Controller
-
 from datetime import datetime, timedelta, time
+
+from django.core.management.base import BaseCommand
 from django.core.exceptions import MultipleObjectsReturned, ImproperlyConfigured
-from edc_quota_controller.models import Client
+
+from edc_quota.client import Quota
+from edc_quota.controller import Controller, Client
 
 
 class Command(BaseCommand):

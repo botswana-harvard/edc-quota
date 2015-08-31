@@ -16,7 +16,7 @@ Including another URLconf
 from django.contrib import admin
 from django.conf.urls import include, url
 from tastypie.api import Api
-from edc_quota_client.api import QuotaResource
+from edc_quota.client.api import QuotaResource
 
 
 api = Api(api_name='v1')

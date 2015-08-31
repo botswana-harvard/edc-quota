@@ -1,8 +1,6 @@
-import sys
-
 from django.test import TestCase
 
-from .override import Override, CodeError
+from edc_quota.override import Override, CodeError
 
 
 class TestOverride(TestCase):

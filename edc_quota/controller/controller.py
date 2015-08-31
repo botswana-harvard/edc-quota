@@ -4,7 +4,7 @@ from datetime import timedelta
 from django.utils import timezone
 
 
-from .models import Client, Quota, QuotaHistory
+from .models import Client, ControllerQuota, ControllerQuotaHistory
 
 
 class Controller(object):
@@ -21,17 +21,17 @@ class Controller(object):
         self.clients = {}
         self.auth = auth
         if quota:
-            self.quota = Quota.objects.get(
+            self.quota = ControllerQuota.objects.get(
                 pk=quota.pk,
                 is_active=True,
                 expires_datetime__gte=timezone.now())
         else:
-            self.quota = Quota.objects.get(
+            self.quota = ControllerQuota.objects.get(
                 app_label=app_label,
                 model_name=model_name,
                 is_active=True,
                 expires_datetime__gte=timezone.now())
-        self.quota_history = QuotaHistory.objects.create(
+        self.quota_history = ControllerQuotaHistory.objects.create(
             quota=self.quota,
             expires_datetime=timezone.now() + timedelta(days=1))
         self.register_all()

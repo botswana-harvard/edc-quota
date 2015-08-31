@@ -9,9 +9,9 @@ from django.utils import timezone
 from django.contrib.auth.models import User
 from tastypie.test import ResourceTestCase
 from tastypie.utils import make_naive
-from edc_quota_client.models import QuotaMixin, Quota as ClientQuota
-from edc_quota_controller.models import Client, QuotaHistory, Quota
-from edc_quota_controller.controller import Controller
+from edc_quota.client.models import QuotaMixin, Quota as ClientQuota
+from edc_quota.controller.models import Client, ControllerQuotaHistory, ControllerQuota
+from edc_quota.controller.controller import Controller
 from collections import defaultdict
 
 tz = pytz.timezone(settings.TIME_ZONE)
@@ -51,7 +51,7 @@ class TestController(TestCase):
 
     def setUp(self):
 
-        self.quota = Quota.objects.create(
+        self.quota = ControllerQuota.objects.create(
             app_label='edc_quota_controller',
             model_name='TestQuotaModel',
             target=3,
@@ -89,7 +89,7 @@ class TestController(TestCase):
     def test_clients_contacted(self):
         controller = DummyController(self.quota)
         controller.get_all()
-        quota_history = QuotaHistory.objects.filter(quota=controller.quota).last()
+        quota_history = ControllerQuotaHistory.objects.filter(quota=controller.quota).last()
         clients_contacted = quota_history.clients_contacted.split(',')
         clients_contacted.sort()
         self.assertEqual(clients_contacted, [c.name for c in Client.objects.all().order_by('hostname')])
@@ -98,7 +98,7 @@ class TestController(TestCase):
     def test_quota_history(self):
         controller = DummyController(self.quota)
         controller.get_all()
-        quota_history = QuotaHistory.objects.filter(quota=controller.quota).last()
+        quota_history = ControllerQuotaHistory.objects.filter(quota=controller.quota).last()
         self.assertEqual(quota_history.model_count, 5 * len(quota_history.clients_contacted.split(',')))
         self.assertIsNotNone(quota_history.last_contact)
 
@@ -176,7 +176,7 @@ class TestResource(ResourceTestCase):
         self.password = 'pass'
         self.user = User.objects.create_user(self.username, 'erik@example.com', self.password)
 
-        self.quota = Quota.objects.create(
+        self.quota = ControllerQuota.objects.create(
             app_label='edc_quota_controller',
             model_name='TestQuotaModel',
             target=3,

@@ -11,8 +11,8 @@ from tastypie.test import ResourceTestCase
 from tastypie.utils import make_naive
 
 from edc_quota.override import Override
-from edc_quota_client.models import QuotaMixin, Quota, QuotaModelWithOverride
-from edc_quota_client.exceptions import QuotaReachedError
+from edc_quota.client.models import QuotaMixin, Quota, QuotaModelWithOverride
+from edc_quota.client.exceptions import QuotaReachedError
 
 tz = pytz.timezone(settings.TIME_ZONE)
 
@@ -28,7 +28,7 @@ class TestQuotaModel(QuotaMixin, models.Model):
         super(TestQuotaModel, self).save(*args, **kwargs)
 
     class Meta:
-        app_label = 'edc_quota_client'
+        app_label = 'edc_quota'
 
 
 class TestQuotaOverrideModel(QuotaModelWithOverride):
@@ -38,32 +38,32 @@ class TestQuotaOverrideModel(QuotaModelWithOverride):
     field2 = models.CharField(max_length=10)
 
     class Meta:
-        app_label = 'edc_quota_client'
+        app_label = 'edc_quota'
 
 
 class TestQuota(TestCase):
 
     def test_quota_model_create(self):
         quota = Quota.objects.create(
-            app_label='edc_quota_client',
+            app_label='edc_quota',
             model_name='TestQuotaModel',
             target=2,
             expires_datetime=timezone.now() + timedelta(days=1)
         )
         self.assertEqual(
             Quota.objects.filter(
-                app_label='edc_quota_client',
+                app_label='edc_quota',
                 model_name='TestQuotaModel').last(), quota)
         self.assertEqual(
             Quota.objects.filter(
-                app_label='edc_quota_client',
+                app_label='edc_quota',
                 model_name='TestQuotaModel',
             ).last(), quota)
 
     def test_quota_pk(self):
         """Assert test model picks the correct quota_pk on created and updated."""
         quota1 = Quota.objects.create(
-            app_label='edc_quota_client',
+            app_label='edc_quota',
             model_name='TestQuotaModel',
             target=2,
             expires_datetime=timezone.now() + timedelta(days=1)
@@ -72,7 +72,7 @@ class TestQuota(TestCase):
         test_model.save()
         self.assertEqual(test_model.quota_pk, quota1.pk)
         quota2 = Quota.objects.create(
-            app_label='edc_quota_client',
+            app_label='edc_quota',
             model_name='TestQuotaModel',
             target=2,
             expires_datetime=timezone.now() + timedelta(days=1)
@@ -86,7 +86,7 @@ class TestQuota(TestCase):
     def test_quota_model_count_with_save(self):
         """Asserts model_count is incremented on save / created."""
         quota = Quota.objects.create(
-            app_label='edc_quota_client',
+            app_label='edc_quota',
             model_name='TestQuotaModel',
             target=2,
             expires_datetime=timezone.now() + timedelta(days=1)
@@ -107,7 +107,7 @@ class TestQuota(TestCase):
     def test_quota_model_count_with_create(self):
         """Asserts model_count is incremented on save / created."""
         quota = Quota.objects.create(
-            app_label='edc_quota_client',
+            app_label='edc_quota',
             model_name='TestQuotaModel',
             target=2,
             expires_datetime=timezone.now() + timedelta(days=1)
@@ -126,7 +126,7 @@ class TestQuota(TestCase):
     def test_quota_reached(self):
         """Asserts mixin save method works with model save."""
         quota = Quota.objects.create(
-            app_label='edc_quota_client',
+            app_label='edc_quota',
             model_name='TestQuotaModel',
             target=2,
             expires_datetime=timezone.now() + timedelta(days=1)
@@ -146,7 +146,7 @@ class TestQuota(TestCase):
     def test_increase_quota(self):
         """Asserts quota is reached and then can be changed on the class."""
         quota = Quota.objects.create(
-            app_label='edc_quota_client', model_name='TestQuotaModel',
+            app_label='edc_quota', model_name='TestQuotaModel',
             target=2,
             expires_datetime=timezone.now() + timedelta(days=1)
         )
@@ -160,7 +160,7 @@ class TestQuota(TestCase):
     def test_decrease_quota(self):
         """Asserts quota is reached and then can be changed on the class."""
         Quota.objects.create(
-            app_label='edc_quota_client',
+            app_label='edc_quota',
             model_name='TestQuotaModel',
             target=2,
             expires_datetime=timezone.now() + timedelta(days=1)
@@ -177,7 +177,7 @@ class TestQuota(TestCase):
     def test_expired_quota(self):
         """Asserts quota is reached if expired."""
         Quota.objects.create(
-            app_label='edc_quota_client', model_name='TestQuotaModel',
+            app_label='edc_quota', model_name='TestQuotaModel',
             target=2,
             expires_datetime=timezone.now() + timedelta(days=-1)
         )
@@ -233,7 +233,7 @@ class QuotaResourceTest(ResourceTestCase):
             'id': self.quota.pk,
             'target': 100,
             'model_count': 3,
-            'app_label': 'edc_quota_client',
+            'app_label': 'edc_quota',
             'model_name': 'TestQuotaModel',
             'quota_datetime': make_naive(self.quota.quota_datetime).isoformat(),
             'expires_datetime': make_naive(self.quota.expires_datetime).isoformat(),
@@ -246,7 +246,7 @@ class QuotaResourceTest(ResourceTestCase):
         TestQuotaModel.objects.create()
         resp = self.api_client.get(
             '/api/v1/quota/',
-            app_label='edc_quota_client',
+            app_label='edc_quota',
             model_name='TestQuotaModel',
             format='json', authentication=self.get_credentials())
         self.assertValidJSONResponse(resp)
@@ -255,7 +255,7 @@ class QuotaResourceTest(ResourceTestCase):
             'id': self.quota.pk,
             'target': 100,
             'model_count': 2,
-            'app_label': 'edc_quota_client',
+            'app_label': 'edc_quota',
             'expires_datetime': make_naive(self.quota.expires_datetime).isoformat(),
             'model_name': 'TestQuotaModel',
             'quota_datetime': make_naive(self.quota.quota_datetime).isoformat(),
@@ -269,7 +269,7 @@ class QuotaResourceTest(ResourceTestCase):
 
     def test_override_quota(self):
         Quota.objects.create(
-            app_label='edc_quota_client',
+            app_label='edc_quota',
             model_name='TestQuotaOverrideModel',
             target=2,
             expires_datetime=timezone.now() + timedelta(days=1)

@@ -1,19 +1,18 @@
 from django.contrib import admin
 
-from .models import Quota, QuotaHistory
-from edc_quota_controller.models import Client
+from .models import ControllerQuota, ControllerQuotaHistory, Client
 
 
-@admin.register(Quota)
-class QuotaAdmin(admin.ModelAdmin):
+@admin.register(ControllerQuota)
+class ControllerQuotaAdmin(admin.ModelAdmin):
     date_hierarchy = 'expires_datetime'
     list_display = ('model_name', 'app_label', 'target', 'expires_datetime', 'max_allocation', 'is_active')
     list_filter = ('is_active', 'app_label', 'expires_datetime')
     search_fields = ('model_name', )
 
 
-@admin.register(QuotaHistory)
-class QuotaHistoryAdmin(admin.ModelAdmin):
+@admin.register(ControllerQuotaHistory)
+class ControllerQuotaHistoryAdmin(admin.ModelAdmin):
     date_hierarchy = 'quota_datetime'
     list_display = ('quota', 'expires_datetime', 'last_contact', 'clients_contacted', 'model_count')
     list_filter = ('expires_datetime', 'last_contact')

@@ -2,7 +2,8 @@ from django.db import models
 from django.utils import timezone
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from edc_quota import Override, OverrideError
+
+from .. import Override, OverrideError
 
 from .exceptions import QuotaReachedError
 
@@ -32,7 +33,7 @@ class Quota(models.Model):
         return "{}".format(self.model_name)
 
     class Meta:
-        app_label = 'edc_quota_client'
+        app_label = 'edc_quota'
 
 
 class QuotaMixin(object):

@@ -44,8 +44,9 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'tastypie',
     'getresults_identifier',
-    'edc_quota_controller',
-    'edc_quota_client',
+    'edc_quota',
+    'edc_quota.controller',
+    'edc_quota.client',
 )
 
 MIDDLEWARE_CLASSES = [

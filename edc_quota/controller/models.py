@@ -2,7 +2,7 @@ from django.db import models
 from django.utils import timezone
 
 
-class Quota(models.Model):
+class ControllerQuota(models.Model):
     """Controllers quota model where each instance refers to a quota that
     this controller is managing.
 
@@ -28,10 +28,10 @@ class Quota(models.Model):
         return "{}".format(self.model_name)
 
     class Meta:
-        app_label = 'edc_quota_controller'
+        app_label = 'edc_quota'
 
 
-class QuotaHistory(models.Model):
+class ControllerQuotaHistory(models.Model):
     """Controllers quota history model.
 
     A new instance is created each time the controller updates quotas on
@@ -39,7 +39,7 @@ class QuotaHistory(models.Model):
 
     get_latest_by = "quota_datetime"
 
-    quota = models.ForeignKey(Quota)
+    quota = models.ForeignKey(ControllerQuota)
 
     model_count = models.IntegerField(
         editable=False,
@@ -74,7 +74,7 @@ class QuotaHistory(models.Model):
         return clients_contacted
 
     class Meta:
-        app_label = 'edc_quota_controller'
+        app_label = 'edc_quota'
         ordering = ('-quota_datetime', )
 
 
@@ -123,4 +123,4 @@ class Client(models.Model):
         return self.hostname
 
     class Meta:
-        app_label = 'edc_quota_controller'
+        app_label = 'edc_quota'
