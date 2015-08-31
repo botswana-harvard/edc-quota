@@ -38,9 +38,9 @@ class Command(BaseCommand):
         sys.stdout.flush()
         for quota in Quota.objects.filter(is_active=True):
             try:
-                sys.stdout.write('  Updating {}'.format(quota))
                 sys.stdout.flush()
                 controller = Controller(quota)
+                sys.stdout.write('  Updating {}'.format(quota))
                 controller.post_all()
                 sys.stdout.write('  Done updating {}'.format(quota))
                 sys.stdout.flush()
@@ -49,18 +49,15 @@ class Command(BaseCommand):
         sys.stdout.write('Done.')
         sys.stdout.flush()
 
-    def post_client(self, hostname):
-        try:
-            today = datetime.now().date()
-            tomorrow = today + timedelta(1)
-            today_start = datetime.combine(today, time())
-            today_end = datetime.combine(tomorrow, time())
-            quota = Quota.objects.get(is_active=True, expires_datetime__range=(today_start, today_end))
-            controller = Controller(quota)
-            controller.clients = {}
-            client = Client.objects.get(hostname=hostname)
-            controller.register(client)
-            controller.post_all()
-            self.stdout.write('{0} was updated successfully.'.format(hostname))
-        except MultipleObjectsReturned:
-                raise ImproperlyConfigured("There are multiple quota active. make sure there is only one quota active.")
+    def post_one(self, hostname):
+        for quota in Quota.objects.filter(is_active=True):
+            try:
+                client = Client.objects.get(hostname=hostname)
+                sys.stdout.flush()
+                controller = Controller(quota)
+                sys.stdout.write('  Updating {} for {}'.format(quota, client))
+                controller.post_client_quota(client.hostname)
+                sys.stdout.write('  Done updating {} for {}'.format(quota, client))
+                sys.stdout.flush()
+            except Quota.DoesNotExist:
+                pass

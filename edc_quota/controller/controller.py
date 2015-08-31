@@ -67,13 +67,7 @@ class Controller(object):
     def post_all(self):
         """posts the new quota targets on the clients."""
         for name in self.quota_history.clients_contacted_list:
-            data = dict(
-                app_label=self.clients.get(name).app_label,
-                model_name=self.clients.get(name).model_name,
-                target=self.clients.get(name).target,
-                expires_datetime=self.clients.get(name).expires_datetime
-            )
-            self.post_client_quota(name, data)
+            self.post_client_quota(name)
 
     def get_client_model_count(self, name):
         """Fetches one clients model_count over the REST api."""
@@ -104,6 +98,12 @@ class Controller(object):
             extra = 1
         return int(allocation / client_count) + extra, remainder
 
-    def post_client_quota(self, name, data):
+    def post_client_quota(self, name):
         """Creates an instance of quota in the client."""
+        data = dict(
+            app_label=self.clients.get(name).app_label,
+            model_name=self.clients.get(name).model_name,
+            target=self.clients.get(name).target,
+            expires_datetime=self.clients.get(name).expires_datetime
+        )
         requests.post(self.clients.get(name).post_url, data=data, auth=self.auth)

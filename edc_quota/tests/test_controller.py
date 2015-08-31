@@ -22,19 +22,19 @@ class DummyController(Controller):
     def get_client_model_count(self, name):
         return 5
 
-    def post_client_quota(self, name, data):
+    def post_client_quota(self, name):
         pass
 
 
-class DummyControllerWithPut(Controller):
-
-    def post_client_quota(self, name, data):
-        self.api_client.post(
-            self.client[name].post_url,
-            format='json',
-            data=data,
-            authentication=self.get_credentials()
-        )
+# class DummyControllerWithPut(Controller):
+#
+#     def post_client_quota(self, name):
+#         self.api_client.post(
+#             self.client[name].post_url,
+#             format='json',
+#             data=data,
+#             authentication=self.get_credentials()
+#         )
 
 
 class TestQuotaModel(QuotaMixin, models.Model):
