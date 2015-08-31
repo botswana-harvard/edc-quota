@@ -14,17 +14,17 @@ and are contacted by the controller.
 - central controller can update itself on progress of all clients toward reaching the over overall quota
 - central controller can approve for a client to override it's quota.
  
-There are two apps, `edc_quota_controller` and `edc_quota_client`.
+There are two apps, `edc_quota.controller` and `edc_quota.client`.
 
-`edc_quota_controller` is only needed if you have offline clients collecting "model instances" toward an overall quota.
+`edc_quota.controller` is only needed if you have offline clients collecting "model instances" toward an overall quota.
 
-edc_quota_client
+edc_quota.client
 ----------------
 
-`edc_quota_client` can expose a REST API to query progress towards a quota. Add this to your `urls.py` if you want OR if you are using `edc_quota_controller`.
+`edc_quota.client` can expose a REST API to query progress towards a quota. Add this to your `urls.py` if you want OR if you are using `edc_quota.controller`.
 
 	from tastypie.api import Api
-	from edc_quota_client.api import QuotaResource
+	from edc_quota.client.api import QuotaResource
 
 	api = Api(api_name='v1')
 	api.register(QuotaResource())
@@ -34,7 +34,7 @@ edc_quota_client
 
 Declare your model with the `QuotaMixin`:
 
-	from edc_quota_client.models import QuotaMixin 
+	from edc_quota.client.models import QuotaMixin 
 
 	class MyModel(QuotaMixin, models.Model):
 	
@@ -49,7 +49,7 @@ Set a quota:
 	
 	from datetime import timedelta
 	from django.utils import timezone
-	from edc_quota_client.models import Quota
+	from edc_quota.client.models import Quota
 	
 	Quota.objects.create(
 		app_label=MyModel._meta.app_label,
@@ -77,12 +77,12 @@ Check progress toward the quota:
 	>>> quota.model_count
 	100
 	
-edc_quota_controller
+edc_quota.controller
 --------------------
 
 The controller `get`s model_counts from each registered client, calculates a new quota targets, and `put` updated quota targets to each client.
 
-Models involved are in `edc_quota_controller`: `quota` `quota_history` and `client`.
+Models involved are in `edc_quota.controller`: `quota` `quota_history` and `client`.
 
 The controller will register all clients associated with a defined `quota`. The association is on `app_label` and `model_name`.
 
@@ -94,7 +94,7 @@ The controller will register all clients associated with a defined `quota`. The 
         controller.get_all()
         controller.post_all()
 
-Recall with `edc_quota_client` a `quota` refers to a target count expected for a particular model. Unlike a `Quota` on the clients, `edc_quota_controller.Quota` on the controller does not refer to an models on the controller. Model `Quota` on the controller is a reference model of quotas that the controller manages for its clients. There is one quota instance per quota managed.
+Recall with `edc_quota.client` a `quota` refers to a target count expected for a particular model. Unlike a `Quota` on the clients, `edc_quota.controller.Quota` on the controller does NOT refer to any models on the controller. `Quota` on the controller is a reference model of quotas that the controller manages for its clients. There is one quota instance on the controller per client quota managed.
 
-Model `edc_quota_controller.quota_history` is added to each time the controller updates the quota on its clients.
+Model `edc_quota.controller.quota_history` is added to each time the controller updates the quota on its clients.
  
