@@ -1,9 +1,11 @@
+from datetime import date
+
 from django.db import models
 from django.utils import timezone
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from .. import Override, OverrideError
+from ..override import Override, OverrideError
 
 from .exceptions import QuotaReachedError
 
@@ -23,7 +25,7 @@ class Quota(models.Model):
 
     target = models.IntegerField()
 
-    expires_datetime = models.DateTimeField()
+    expiration_date = models.DateField()
 
     is_active = models.BooleanField(default=True)
 
@@ -60,7 +62,7 @@ class QuotaMixin(object):
             app_label=self._meta.app_label,
             model_name=self._meta.object_name,
         ).last()
-        if quota.expires_datetime > timezone.now():
+        if quota.expiration_date > date.today():
             quota_reached = quota.model_count >= quota.target
         else:
             quota_reached = True

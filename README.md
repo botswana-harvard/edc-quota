@@ -47,14 +47,13 @@ Declare your model with the `QuotaMixin`:
 			
 Set a quota:
 	
-	from datetime import timedelta
-	from django.utils import timezone
+	from datetime import date, timedelta
 	from edc_quota.client.models import Quota
 	
 	Quota.objects.create(
 		app_label=MyModel._meta.app_label,
 		model_name=MyModel._meta.object_name,
-		expires_datetime=timezone.now() + timedelta(days=1),
+		expiration_date=date.today() + timedelta(days=1),
 		target=100
 	)
 		
@@ -80,11 +79,11 @@ Check progress toward the quota:
 edc_quota.controller
 --------------------
 
-The controller `get`s model_counts from each registered client, calculates a new quota targets, and `put` updated quota targets to each client.
+The controller gets model_counts (`get`) from each registered client, calculates new quota targets, and updates quota targets (`put`) to each client. It manages one quota instance per controller instance.
 
-Models involved are in `edc_quota.controller`: `quota` `quota_history` and `client`.
+Models involved are in `edc_quota.controller`: `ControllerQuota` `QuotaHistory` and `Client`.
 
-The controller will register all clients associated with a defined `quota`. The association is on `app_label` and `model_name`.
+The controller registers all clients associated with the `ControllerQuota`. The association is on `app_label` and `model_name`.
 
     For example:
 
@@ -94,7 +93,15 @@ The controller will register all clients associated with a defined `quota`. The 
         controller.get_all()
         controller.post_all()
 
-Recall with `edc_quota.client` a `quota` refers to a target count expected for a particular model. Unlike a `Quota` on the clients, `edc_quota.controller.Quota` on the controller does NOT refer to any models on the controller. `Quota` on the controller is a reference model of quotas that the controller manages for its clients. There is one quota instance on the controller per client quota managed.
+Recall with `edc_quota.client` a `quota` refers to a target count expected for a particular model. Unlike a `Quota` on the clients, `ControllerQuota` on the controller does NOT refer to any models on the controller. `ControllerQuota` on the controller is a reference model of quotas that the controller manages for its clients. There is one quota instance on the controller per client quota managed.
 
-Model `edc_quota.controller.quota_history` is added to each time the controller updates the quota on its clients.
+A new instance is added to model `edc_quota.controller.quota_history` for each client quota updated by the controller.
+ 
+The `Controller` accepts either an instance of `ControllerQuota` or the `app_label` and `model_name` needed to get the `ControllerQuota` instance. The `Controller` will raise a `ControllerQuota.DoesNotExist` error if the quota model instance is not active, expired, or does not exist.
+
+To get/post to a single client or a select list of clients, pass a list of client hostnames to the Controller:
+ 
+    controller = Controller(quota, clients=['host1', 'host2'])
+    controller.get_all()
+    controller.post_all()
  

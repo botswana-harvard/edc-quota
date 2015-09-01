@@ -18,12 +18,9 @@ install:
 
 before_script:
   - flake8 edc_quota
-  - flake8 edc_quota_client
-  - flake8 edc_quota_controller
 
 script: 
-  - coverage run --source=edc_quota_client manage.py test
-  - coverage run --source=edc_quota_controller manage.py test
+  - coverage run --source=edc_quota manage.py test
 
 after_success:
   - coveralls
