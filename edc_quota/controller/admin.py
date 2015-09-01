@@ -6,6 +6,7 @@ from .models import ControllerQuota, ControllerQuotaHistory, Client
 @admin.register(ControllerQuota)
 class ControllerQuotaAdmin(admin.ModelAdmin):
     date_hierarchy = 'expires_datetime'
+    fields = ('model_name', 'app_label', 'target', 'expires_datetime', 'max_allocation', 'is_active')
     list_display = ('model_name', 'app_label', 'target', 'expires_datetime', 'max_allocation', 'is_active')
     list_filter = ('is_active', 'app_label', 'expires_datetime')
     search_fields = ('model_name', )
@@ -14,6 +15,7 @@ class ControllerQuotaAdmin(admin.ModelAdmin):
 @admin.register(ControllerQuotaHistory)
 class ControllerQuotaHistoryAdmin(admin.ModelAdmin):
     date_hierarchy = 'quota_datetime'
+    fields = ('quota', 'expires_datetime', 'last_contact', 'clients_contacted', 'model_count')
     list_display = ('quota', 'expires_datetime', 'last_contact', 'clients_contacted', 'model_count')
     list_filter = ('expires_datetime', 'last_contact')
     search_fields = ('clients_contacted', )
@@ -22,6 +24,10 @@ class ControllerQuotaHistoryAdmin(admin.ModelAdmin):
 @admin.register(Client)
 class ClientAdmin(admin.ModelAdmin):
     date_hierarchy = 'expires_datetime'
+    fields = (
+        'hostname', 'app_label', 'model_name', 'port', 'last_contact', 'target',
+        'expires_datetime', 'is_active'
+    )
     list_display = (
         'hostname', 'app_label', 'model_name', 'port', 'last_contact', 'target',
         'expires_datetime', 'is_active'
