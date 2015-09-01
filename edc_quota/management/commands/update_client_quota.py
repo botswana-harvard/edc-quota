@@ -20,7 +20,6 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-
         self.clients = None
         sys.stdout.write('Begin ...')
         sys.stdout.flush()
