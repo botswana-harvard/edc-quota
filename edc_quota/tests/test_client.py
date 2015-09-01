@@ -5,7 +5,6 @@ from datetime import date, timedelta
 from django.conf import settings
 from django.db import models
 from django.test import TestCase
-# from django.utils import timezone
 from django.contrib.auth.models import User
 from tastypie.test import ResourceTestCase
 from tastypie.utils import make_naive
