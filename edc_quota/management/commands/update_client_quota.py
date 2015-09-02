@@ -1,9 +1,9 @@
 import sys
 
+from django.utils import timezone
 from django.core.management.base import BaseCommand
 
-from edc_quota.controller import Controller, Client
-from edc_quota.controller.models import ControllerQuota
+from edc_quota.controller import Controller, ControllerQuota
 
 
 class Command(BaseCommand):
@@ -15,28 +15,22 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
 
         parser.add_argument(
-            '--post_all', action='store_true', default=False,
-            help='Update all quota clients'
-        )
-        parser.add_argument(
-            '--post_client', action='store_true', default=False,
-            help='Update a particular client'
+            '--clients', action='store_true', default=False,
+            help='Update one or more specific clients'
         )
 
     def handle(self, *args, **options):
-
-        if options.get('post_all', ''):
-            self.post_all()
-        elif options.get('post_client', ''):
-            self.post_one(args[0])
-
-    def post_all(self):
-        sys.stdout.write('Begin post all ...')
+        self.clients = None
+        sys.stdout.write('Begin ...')
         sys.stdout.flush()
-        for quota in ControllerQuota.objects.filter(is_active=True):
+        if options.get('clients', ''):
+            self.clients = args[0].split(',')
+            sys.stdout.write('Updating clients {} only'.format(args[0]))
+            sys.stdout.flush()
+        for quota in ControllerQuota.objects.filter(is_active=True, expires_datetime__lte=timezone.now()):
             try:
                 sys.stdout.flush()
-                controller = Controller(quota)
+                controller = Controller(quota, clients=self.clients)
                 sys.stdout.write('  Updating {}'.format(quota))
                 controller.get_all()
                 controller.post_all()
@@ -46,17 +40,3 @@ class Command(BaseCommand):
                 pass
         sys.stdout.write('Done.')
         sys.stdout.flush()
-
-    def post_one(self, hostname):
-        for quota in ControllerQuota.objects.filter(is_active=True):
-            try:
-                client = Client.objects.get(hostname=hostname)
-                sys.stdout.flush()
-                controller = Controller(quota)
-                sys.stdout.write('  Updating {} for {}'.format(quota, client))
-                controller.get_all()
-                controller.post_client_quota(client.hostname)
-                sys.stdout.write('  Done updating {} for {}'.format(quota, client))
-                sys.stdout.flush()
-            except ControllerQuota.DoesNotExist:
-                pass

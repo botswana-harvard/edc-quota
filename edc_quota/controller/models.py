@@ -16,7 +16,11 @@ class ControllerQuota(models.Model):
 
     target = models.IntegerField()
 
-    expires_datetime = models.DateTimeField()
+    expiration_date = models.DateField()
+
+    duration = models.IntegerField(
+        null=True,
+        help_text='Default duration in days to set on the client.')
 
     max_allocation = models.IntegerField(
         blank=True,
@@ -47,7 +51,7 @@ class ControllerQuotaHistory(models.Model):
         editable=False,
         null=True)
 
-    expires_datetime = models.DateTimeField(
+    expiration_date = models.DateField(
         editable=False,
         null=True)
 
@@ -95,7 +99,7 @@ class Client(models.Model):
         editable=False,
         default=0)
 
-    expires_datetime = models.DateTimeField(
+    expiration_date = models.DateField(
         editable=False,
         null=True)
 

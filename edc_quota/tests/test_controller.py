@@ -1,12 +1,10 @@
 import pytz
 
-from datetime import timedelta
+from datetime import date, timedelta
 
 from django.conf import settings
 from django.db import models
 from django.test import TestCase
-from django.utils import timezone
-from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.models import User
 from tastypie.test import ResourceTestCase
 from tastypie.utils import make_naive
@@ -27,25 +25,14 @@ class DummyController(Controller):
         pass
 
 
-# class DummyControllerWithPut(Controller):
-#
-#     def post_client_quota(self, name):
-#         self.api_client.post(
-#             self.client[name].post_url,
-#             format='json',
-#             data=data,
-#             authentication=self.get_credentials()
-#         )
-
-
-class TestQuotaModel(QuotaMixin, models.Model):
+class TestQuotaModel2(QuotaMixin, models.Model):
 
     field1 = models.CharField(max_length=10)
 
     field2 = models.CharField(max_length=10)
 
     class Meta:
-        app_label = 'edc_quota_controller'
+        app_label = 'edc_quota'
 
 
 class TestController(TestCase):
@@ -53,26 +40,21 @@ class TestController(TestCase):
     def setUp(self):
 
         self.quota = ControllerQuota.objects.create(
-            app_label='edc_quota_controller',
-            model_name='TestQuotaModel',
+            app_label='edc_quota',
+            model_name='TestQuotaModel2',
             target=3,
-            expires_datetime=timezone.now() + timedelta(days=1)
+            expiration_date=date.today() + timedelta(days=1)
         )
 
         for hostname in ['host{}'.format(n) for n in range(1, 10)]:
             Client.objects.create(
                 hostname=hostname,
-                app_label='edc_quota_controller',
-                model_name='TestQuotaModel',
+                app_label='edc_quota',
+                model_name='TestQuotaModel2',
                 is_active=True)
 
     def test_instantiate(self):
         controller = Controller(self.quota)
-        self.assertEqual(controller.quota, self.quota)
-        controller = Controller(
-            app_label='edc_quota_controller',
-            model_name='TestQuotaModel',
-        )
         self.assertEqual(controller.quota, self.quota)
 
     def test_register_clients(self):
@@ -81,7 +63,7 @@ class TestController(TestCase):
         self.assertEqual(Client.objects.all().count(), len(controller.clients))
         Client.objects.create(
             hostname='hostname',
-            app_label='edc_quota_controller',
+            app_label='edc_quota',
             model_name='TestQuotaModelNotMe',
             is_active=True)
         controller = Controller(self.quota)
@@ -110,7 +92,7 @@ class TestController(TestCase):
         for client in Client.objects.all():
             self.assertEqual(client.last_contact, controller.quota_history.last_contact)
             self.assertEqual(client.target, 0)
-            self.assertEqual(client.expires_datetime, controller.quota_history.expires_datetime)
+            self.assertEqual(client.expiration_date, controller.quota_history.expiration_date)
         controller = DummyController(self.quota)
         controller.quota.target = 100
         controller.get_all()
@@ -118,17 +100,17 @@ class TestController(TestCase):
         for client in Client.objects.all():
             self.assertEqual(client.last_contact, controller.quota_history.last_contact)
             self.assertGreaterEqual(client.target, 5)
-            self.assertEqual(client.expires_datetime, controller.quota_history.expires_datetime)
+            self.assertEqual(client.expiration_date, controller.quota_history.expiration_date)
 
     def test_expired_quota(self):
-        self.quota = ControllerQuota.objects.create(
-            app_label='edc_quota_controller',
-            model_name='TestQuotaModel',
+        quota = ControllerQuota.objects.create(
+            app_label='edc_quota',
+            model_name='TestQuotaModel2',
             target=3,
-            expires_datetime=timezone.now() - timedelta(days=1)
+            expiration_date=date.today() - timedelta(days=1)
         )
-        with self.assertRaises(ObjectDoesNotExist):
-            DummyController(self.quota)
+        with self.assertRaises(ControllerQuota.DoesNotExist):
+            DummyController(quota)
 
     def test_target1(self):
         clients = defaultdict(int)
@@ -188,16 +170,16 @@ class TestResource(ResourceTestCase):
         self.user = User.objects.create_user(self.username, 'erik@example.com', self.password)
 
         self.quota = ControllerQuota.objects.create(
-            app_label='edc_quota_controller',
-            model_name='TestQuotaModel',
+            app_label='edc_quota',
+            model_name='TestQuotaModel2',
             target=3,
-            expires_datetime=timezone.now() + timedelta(days=1)
+            expiration_date=date.today() + timedelta(days=1)
         )
 
         Client.objects.create(
             hostname='erik',
-            app_label='edc_quota_controller',
-            model_name='TestQuotaModel',
+            app_label='edc_quota',
+            model_name='TestQuotaModel2',
             is_active=True)
 
     def get_credentials(self):
@@ -209,10 +191,10 @@ class TestResource(ResourceTestCase):
         self.assertEqual(ClientQuota.objects.count(), 0)
 
         resource_data = {
-            'app_label': 'edc_quota_client',
+            'app_label': 'edc_quota',
             'model_name': 'Quota',
             'target': 30,
-            'expires_datetime': make_naive(timezone.now()).isoformat(),
+            'expiration_date': date.today()
         }
         self.assertHttpCreated(
             self.api_client.post(
@@ -224,6 +206,13 @@ class TestResource(ResourceTestCase):
         )
         self.assertEqual(ClientQuota.objects.count(), 1)
 
-#     def test_controller_roundtrip(self):
-#         self.assertEqual(ClientQuota.objects.count(), 0)
-#         controller = Controller(self.quota)
+    def test_controller_quota_not_active_or_expired_raises(self):
+        self.quota.is_active = False
+        self.quota.save()
+        with self.assertRaises(ControllerQuota.DoesNotExist):
+            Controller(self.quota)
+        self.quota.is_active = True
+        self.quota.expiration_date = date.today() - timedelta(days=1)
+        self.quota.save()
+        with self.assertRaises(ControllerQuota.DoesNotExist):
+            Controller(self.quota)

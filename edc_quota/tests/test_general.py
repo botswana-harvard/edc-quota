@@ -40,19 +40,3 @@ class TestOverride(TestCase):
         override.decode()
         for c in override.decoded:
             self.assertIn(c, override.allowed_chars)
-
-#     def test_many_combinations(self):
-#         n = 0
-#         codes = []
-#         print()
-#         while n < 100000:
-#             n += 1
-#             override = Override()
-#             code = override.code
-#             confirmation_code = override.confirmation_code
-#             override = Override(code, confirmation_code)
-#             self.assertTrue(override.is_valid_combination)
-#             self.assertNotIn(code, codes)
-#             codes.append(code)
-#             sys.stdout.write('{} \r'.format(n))
-#             sys.stdout.flush()
