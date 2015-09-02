@@ -25,12 +25,10 @@ class ControllerQuotaHistoryAdmin(admin.ModelAdmin):
 class ClientAdmin(admin.ModelAdmin):
     date_hierarchy = 'expiration_date'
     fields = (
-        'hostname', 'app_label', 'model_name', 'port', 'last_contact', 'target',
-        'expiration_date', 'is_active'
+        'hostname', 'app_label', 'model_name', 'port', 'is_active'
     )
     list_display = (
-        'hostname', 'app_label', 'model_name', 'port', 'last_contact', 'target',
-        'expiration_date', 'is_active'
+        'hostname', 'app_label', 'model_name', 'port', 'is_active'
     )
     list_filter = ('app_label', 'model_name', 'is_active', 'expiration_date')
     search_fields = ('app_label', 'model_name')

@@ -8,7 +8,7 @@ from edc_quota.controller import Controller, ControllerQuota
 
 class Command(BaseCommand):
 
-    args = ('--post_all', '--post_client')
+    args = ('--clients', '--post_client')
 
     help = 'Update the client quota'
 
@@ -21,22 +21,21 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         self.clients = None
-        sys.stdout.write('Begin ...')
+        sys.stdout.write('Begin ...\n')
         sys.stdout.flush()
-        if options.get('clients', ''):
-            self.clients = args[0].split(',')
-            sys.stdout.write('Updating clients {} only'.format(args[0]))
-            sys.stdout.flush()
-        for quota in ControllerQuota.objects.filter(is_active=True, expires_datetime__lte=timezone.now()):
+        self.clients = args[0].split(',')
+        sys.stdout.write('Updating clients {} only\n'.format(args[0]))
+        sys.stdout.flush()
+        for quota in ControllerQuota.objects.filter(is_active=True, expiration_date__lte=timezone.now()):
             try:
                 sys.stdout.flush()
                 controller = Controller(quota, clients=self.clients)
-                sys.stdout.write('  Updating {}'.format(quota))
+                sys.stdout.write('Updating {}\n'.format(quota))
                 controller.get_all()
-                controller.post_all()
-                sys.stdout.write('  Done updating {}'.format(quota))
+                controller.post_all() 
+                sys.stdout.write('Done updating {}\n'.format(quota))
                 sys.stdout.flush()
             except ControllerQuota.DoesNotExist:
                 pass
-        sys.stdout.write('Done.')
+        sys.stdout.write('Done.\n')
         sys.stdout.flush()
