@@ -31,6 +31,9 @@ class ControllerQuota(models.Model):
     def __str__(self):
         return "{}".format(self.model_name)
 
+    class Meta:
+        db_table = 'edc_quota_controllerquota'
+
 
 class ControllerQuotaHistory(models.Model):
     """Controllers quota history model.
@@ -76,6 +79,7 @@ class ControllerQuotaHistory(models.Model):
 
     class Meta:
         ordering = ('-quota_datetime', )
+        db_table = 'edc_quota_quotahistory'
 
 
 class Client(models.Model):

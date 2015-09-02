@@ -34,6 +34,9 @@ class Quota(models.Model):
     def __str__(self):
         return "{}".format(self.model_name)
 
+    class Meta:
+        db_table = 'edc_quota_quota'
+
 
 class QuotaMixin(object):
 
