@@ -32,9 +32,6 @@ class Quota(models.Model):
     def __str__(self):
         return "{}".format(self.model_name)
 
-    class Meta:
-        app_label = 'edc_quota_client'
-
 
 class QuotaMixin(object):
 

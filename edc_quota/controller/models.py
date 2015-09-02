@@ -27,9 +27,6 @@ class ControllerQuota(models.Model):
     def __str__(self):
         return "{}".format(self.model_name)
 
-    class Meta:
-        app_label = 'edc_quota'
-
 
 class ControllerQuotaHistory(models.Model):
     """Controllers quota history model.
@@ -74,7 +71,6 @@ class ControllerQuotaHistory(models.Model):
         return clients_contacted
 
     class Meta:
-        app_label = 'edc_quota'
         ordering = ('-quota_datetime', )
 
 
@@ -121,6 +117,3 @@ class Client(models.Model):
     @property
     def name(self):
         return self.hostname
-
-    class Meta:
-        app_label = 'edc_quota'
