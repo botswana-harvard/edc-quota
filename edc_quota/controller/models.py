@@ -125,3 +125,6 @@ class Client(models.Model):
     @property
     def name(self):
         return self.hostname
+
+    class Meta:
+        db_table = 'edc_quota_controllerclient'
