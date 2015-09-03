@@ -18,19 +18,24 @@ There are two apps, `edc_quota.controller` and `edc_quota.client`.
 
 `edc_quota.controller` is only needed if you have offline clients collecting "model instances" toward an overall quota.
 
+Installation
+------------
+
+Add to `settings`:
+
+	INSTALLED_APPS = (
+	...
+	'edc_quota', 
+	...
+	)
+
+Add to `urls`:
+
+	urlpatterns += patterns('edc_quota', url(r'^edc_quota/', include('edc_quota.urls')))
+
+
 edc_quota.client
 ----------------
-
-`edc_quota.client` can expose a REST API to query progress towards a quota. Add this to your `urls.py` if you want OR if you are using `edc_quota.controller`.
-
-	from tastypie.api import Api
-	from edc_quota.client.api import QuotaResource
-
-	api = Api(api_name='v1')
-	api.register(QuotaResource())
-
-	urlpatterns += [url(r'^api/', include(api.urls))]
-
 
 Declare your model with the `QuotaMixin`:
 
