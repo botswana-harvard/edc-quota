@@ -24,7 +24,7 @@ class Command(BaseCommand):
         if quotas.count() == 0:
             sys.stdout.write('Nothing to do! Try creating a controller quota.\n')
         else:
-            sys.stdout.write('Processing {} controller quota.\n'.format(quotas.count()))
+            sys.stdout.write('Found {} controller quota.\n'.format(quotas.count()))
         for quota in quotas:
             sys.stdout.flush()
             controller = Controller(quota, clients=self.clients)
