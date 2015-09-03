@@ -32,7 +32,7 @@ class ControllerQuota(models.Model):
         return "{}".format(self.model_name)
 
     class Meta:
-        db_table = 'edc_quota_controllerquota'
+        app_label = 'edc_quota'
 
 
 class ControllerQuotaHistory(models.Model):
@@ -78,8 +78,8 @@ class ControllerQuotaHistory(models.Model):
         return clients_contacted
 
     class Meta:
+        app_label = 'edc_quota'
         ordering = ('-quota_datetime', )
-        db_table = 'edc_quota_quotahistory'
 
 
 class Client(models.Model):
@@ -127,4 +127,4 @@ class Client(models.Model):
         return self.hostname
 
     class Meta:
-        db_table = 'edc_quota_controllerclient'
+        app_label = 'edc_quota'
