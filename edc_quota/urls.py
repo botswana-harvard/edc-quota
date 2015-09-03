@@ -18,7 +18,6 @@ from django.conf.urls import include, url
 from tastypie.api import Api
 from edc_quota.client.api import QuotaResource
 
-
 api = Api(api_name='v1')
 api.register(QuotaResource())
 
