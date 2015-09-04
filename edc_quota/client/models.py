@@ -1,10 +1,9 @@
 from datetime import date
 from collections import namedtuple
-from django import VERSION
-if (VERSION[0], VERSION[1]) == (1, 6):
-    from django.db.models import get_model
-else:
+try:
     from django.apps.apps import get_model
+except ImportError:
+    from django.db.models import get_model
 from django.db import models
 from django.utils import timezone
 from django.db.models.signals import post_save
