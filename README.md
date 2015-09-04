@@ -96,11 +96,11 @@ Returns a namedtuple with attributes `target, model_count, expiration_date, pk, 
 
 `Model.objects.quota_reached` (property):
 
-Returns True if the target has been met or the quota id expired.
+Returns True if the target has been met or the quota is expired.
 
 `Model.objects.quota_expired` (property):
 
-Returns True if the quota id expired.
+Returns True if the quota is expired.
 
 
 Using with the Controller
