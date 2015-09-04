@@ -52,10 +52,7 @@ Set a quota:
 	
 	from datetime import date, timedelta
 	
-	MyModel.objects.set_quota(
-	    expiration_date=date.today() + timedelta(days=1),
-		target=100
-	)
+	MyModel.objects.set_quota(100, date.today() + timedelta(days=1))
 
 Use your model:
 
@@ -69,7 +66,7 @@ Check progress toward the quota:
 	100
 	>>> model_count
 	25
-	>>> MyModel.objects.quota_reached()
+	>>> MyModel.objects.quota_reached
 	False
 
 Once the target is reached, your Model will raise an exception before more than 100 instances are created  
@@ -80,7 +77,7 @@ Once the target is reached, your Model will raise an exception before more than 
 	>>> 	MyModel.objects.create()
 	>>> MyModel.objects.all().count()
 	100
-	>>> MyModel.objects.quota_reached()
+	>>> MyModel.objects.quota_reached
 	True
 	>>> MyModel.objects.create()
 	QuotaReachedError: Quota for model MyModel has been reached.
@@ -94,10 +91,10 @@ Manager methods:
 `Model.objects.get_quota()`
 	returns a namedtuple with attributes `target, model_count, expiration_date, pk, reached, expired`.
 
-`Model.objects.reached`:
+`Model.objects.quota_reached`:
 	returns True if the target has been met or the quota id expired.
 
-`Model.objects.expired`:
+`Model.objects.quota_expired`:
 	returns True if the quota id expired.
 
 
