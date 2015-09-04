@@ -58,10 +58,12 @@ Set a quota:
 	)
 
 Use your model:
+
 	>>> for _ in range(0, 25):
 	>>> 	MyModel.objects.create()
 
 Check progress toward the quota:
+
 	>>> target, model_count, expiration_date = MyModel.objects.get_quota()
 	>>> target
 	100
