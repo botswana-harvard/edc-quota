@@ -83,8 +83,8 @@ Once the target is reached, your Model will raise an exception before more than 
 	QuotaReachedError: Quota for model MyModel has been reached.
 	
 
-Manager methods:
-----------------
+Manager methods
+---------------
 
 `Model.objects.set_quota(target, expiration_date)`:
 	Sets a quota. If model instances already exist, the model_count attribute will be updated with the count. 
