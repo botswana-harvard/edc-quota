@@ -38,6 +38,29 @@ class Quota(models.Model):
         app_label = 'edc_quota'
 
 
+class QuotaManager(models.Manager):
+
+    """A manager for a model that uses the QuotaMixin."""
+
+    def set_quota(self, target, expiration_date):
+        Quota.objects.create(
+            app_label=self.model._meta.app_label,
+            model_name=self.model._meta.object_name,
+            target=target,
+            expiration_date=expiration_date
+        )
+
+    def get_quota(self):
+        quota = Quota.objects.filter(
+            app_label=self.model._meta.app_label,
+            model_name=self.model._meta.object_name,
+        ).order_by('quota_datetime').last()
+        try:
+            return quota.target, quota.model_count, quota.expiration_date
+        except AttributeError:
+            return None, None, None
+
+
 class QuotaMixin(object):
 
     quota_pk = models.CharField(max_length=36, null=True)

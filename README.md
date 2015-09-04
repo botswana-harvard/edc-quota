@@ -21,7 +21,7 @@ There are two apps, `edc_quota.controller` and `edc_quota.client`.
 Installation
 ------------
 
-Add to `settings`:
+Add the `edc_quota` app to your project `settings`:
 
 	INSTALLED_APPS = (
 	...
@@ -29,23 +29,25 @@ Add to `settings`:
 	...
 	)
 
-Add to `urls`:
+Include the `edc_quota` urls in your project `urls`:
 
 	urlpatterns += patterns('edc_quota', url(r'^edc_quota/', include('edc_quota.urls')))
 
 
-edc_quota.client
-----------------
+Usage
+-----
 
-Declare your model with the `QuotaMixin`:
+Declare your model with the `QuotaMixin` and the `QuotaManager`:
 
-	from edc_quota.client.models import QuotaMixin 
+	from edc_quota.client import QuotaMixin, QuotaManager
 
 	class MyModel(QuotaMixin, models.Model):
 	
 		field1 = models.CharField(max_length=25)
 
 		field2 = models.CharField(max_length=25)
+
+		objects = QuotaManager()
 		
 		class Meta:
 			app_label = 'my_app'
@@ -53,36 +55,37 @@ Declare your model with the `QuotaMixin`:
 Set a quota:
 	
 	from datetime import date, timedelta
-	from edc_quota.client.models import Quota
 	
-	Quota.objects.create(
-		app_label=MyModel._meta.app_label,
-		model_name=MyModel._meta.object_name,
-		expiration_date=date.today() + timedelta(days=1),
+	MyModel.objects.set_quota(
+	    expiration_date=date.today() + timedelta(days=1),
 		target=100
 	)
-		
-Model will raise an exception before more than 100 instances are created  
 
-	>>> for _ in range(0, 100):
+Use your model:
+	>>> for _ in range(0, 25):
 	>>> 	MyModel.objects.create()
-	>>>	
+
+Check progress toward the quota:
+	>>> target, model_count, expiration_date = MyModel.objects.get_quota()
+	>>> target
+	100
+	>>> model_count
+	25
+
+Once the target is reached, your Model will raise an exception before more than 100 instances are created  
+
+	>>> MyModel.objects.all().count()
+	25
+	>>> for _ in range(0, 75):
+	>>> 	MyModel.objects.create()
+	>>> MyModel.objects.all().count()
+	100
 	>>> MyModel.objects.create()
 	QuotaReachedError: Quota for model MyModel has been reached.
 	
-Check progress toward the quota:
 
-	>>> quota = Quota.objects.filter(
-			app_label=MyModel._meta.app_label,
-			model_name=MyModel._meta.object_name,
-		).latest()
-	>>> quota.target
-	100
-	>>> quota.model_count
-	100
-	
-edc_quota.controller
---------------------
+Using with the Controller
+-------------------------
 
 The controller gets model_counts (`get`) from each registered client, calculates new quota targets, and updates quota targets (`put`) to each client. It manages one quota instance per controller instance.
 

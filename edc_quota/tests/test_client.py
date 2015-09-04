@@ -10,7 +10,7 @@ from tastypie.test import ResourceTestCase
 from tastypie.utils import make_naive
 
 from edc_quota.override import Override
-from edc_quota.client.models import QuotaMixin, Quota, QuotaModelWithOverride
+from edc_quota.client.models import QuotaMixin, Quota, QuotaModelWithOverride, QuotaManager
 from edc_quota.client.exceptions import QuotaReachedError
 
 tz = pytz.timezone(settings.TIME_ZONE)
@@ -21,6 +21,8 @@ class TestQuotaModel(QuotaMixin, models.Model):
     field1 = models.CharField(max_length=10)
 
     field2 = models.CharField(max_length=10)
+
+    objects = QuotaManager()
 
     def save(self, *args, **kwargs):
         self.field2 = 'erik'
@@ -35,6 +37,8 @@ class TestQuotaOverrideModel(QuotaModelWithOverride):
     field1 = models.CharField(max_length=10)
 
     field2 = models.CharField(max_length=10)
+
+    objects = QuotaManager()
 
     class Meta:
         app_label = 'edc_quota'
@@ -58,6 +62,18 @@ class TestQuota(TestCase):
                 app_label='edc_quota',
                 model_name='TestQuotaModel',
             ).last(), quota)
+
+    def test_quota_create_with_manager(self):
+        expiration_date = date.today() + timedelta(days=1)
+        TestQuotaModel.objects.set_quota(10, expiration_date)
+        TestQuotaModel.objects.set_quota(5, expiration_date + timedelta(days=1))
+        last_quota = Quota.objects.filter(
+            app_label='edc_quota',
+            model_name='TestQuotaModel').order_by('quota_datetime').last()
+        self.assertEqual(TestQuotaModel.objects.get_quota(),
+                         (last_quota.target, last_quota.model_count, last_quota.expiration_date))
+        self.assertEqual(TestQuotaModel.objects.get_quota(),
+                         (5, 0, expiration_date + timedelta(days=1)))
 
     def test_quota_pk(self):
         """Assert test model picks the correct quota_pk on created and updated."""
