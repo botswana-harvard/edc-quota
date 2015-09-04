@@ -132,3 +132,9 @@ To get/post to a single client or a select list of clients, pass a list of clien
     controller.get_all()
     controller.post_all()
  
+Overriding a Quota
+------------------
+(To be completed)
+
+Once the quota has been reached, a user may bypass the quota one instance at a time using a pair of codes; namely the _override request code_ and the _override code_. In the exception message the user is told the quota has been reached and is shown the _override request code_. The _override request code_ is needed to create an _override code_ on the controller. The codes are entered into the Override model on the client and referenced by the save method of the target model.
+  
