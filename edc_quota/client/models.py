@@ -13,7 +13,7 @@ from ..override import Override, OverrideError
 
 from .exceptions import QuotaReachedError
 
-QuotaTuple = namedtuple('QuotaTuple', 'target model_count expiration_date pk reached expired')
+QuotaTuple = namedtuple('QuotaTuple', 'target model_count expiration_date pk target_reached expired quota_reached')
 
 
 class Quota(models.Model):
@@ -66,16 +66,20 @@ class QuotaManager(models.Manager):
             model_name=self.model._meta.object_name,
         ).order_by('quota_datetime').last()
         try:
-            reached = True if (quota.target <= quota.model_count) else False
+            target_reached = True if (quota.target <= quota.model_count) else False
             expired = True if date.today() > quota.expiration_date else False
-            return QuotaTuple(quota.target, quota.model_count, quota.expiration_date, quota.pk, reached, expired)
+            quota_reached = True if (target_reached or expired) else False
+            return QuotaTuple(
+                quota.target, quota.model_count, quota.expiration_date,
+                quota.pk, target_reached, expired, quota_reached
+            )
         except AttributeError:
-            return QuotaTuple(None, None, None, None, None, None)
+            return QuotaTuple(None, None, None, None, None, None, None)
 
     @property
     def quota_reached(self):
         quota = self.get_quota()
-        if quota.reached:
+        if quota.target_reached:
             return True
         elif quota.expired:
             return True
@@ -88,44 +92,17 @@ class QuotaManager(models.Manager):
 
 class QuotaMixin(object):
 
-    err_message = None
-
     quota_pk = models.CharField(max_length=36, null=True)
 
     def save(self, *args, **kwargs):
-        if self.quota_reached:
-            raise QuotaReachedError(self.err_message)
+        if not self.id:
+            quota = self.__class__.objects.get_quota()
+            if quota.pk:
+                self.quota_pk = quota.pk
+                if quota.quota_reached:
+                    raise QuotaReachedError('Quota for model {} has been reached or exceeded. Got {} >= {}.'.format(
+                        self.__class__.__name__, quota.model_count, quota.target))
         super(QuotaMixin, self).save(*args, **kwargs)
-
-    @property
-    def quota_reached(self):
-        """Returns True if the model instance count is greater than the quota target for this model.
-
-        - called from the save method;
-        - ignores existing instances;
-        - will raise an exception if no Quota for this model.
-        """
-        if self.id:
-            return False
-        try:
-            quota = Quota.objects.filter(
-                app_label=self._meta.app_label,
-                model_name=self._meta.object_name,
-            ).last()
-            reached = self.__class__.objects.quota_reached
-            expired = self.__class__.objects.quota_expired
-            if expired and reached:
-                self.err_message = 'Quota for model {} has expired.'.format(self.__class__.__name__)
-                quota_reached = True
-            elif reached:
-                self.err_message = 'Quota for model {} has been reached.'.format(self.__class__.__name__)
-                quota_reached = True
-            else:
-                quota_reached = False
-            self.quota_pk = quota.pk
-        except Quota.DoesNotExist:
-            quota_reached = False
-        return quota_reached
 
 
 class QuotaModelWithOverride(QuotaMixin, models.Model):
@@ -143,13 +120,11 @@ class QuotaModelWithOverride(QuotaMixin, models.Model):
     )
 
     def save(self, *args, **kwargs):
-        if self.quota_reached:
-            try:
+        if not self.id:
+            quota = self.__class__.objects.get_quota()
+            self.quota_pk = quota.pk
+            if quota.quota_reached:
                 self.override_quota()
-            except OverrideError as err:
-                raise QuotaReachedError(
-                    'Quota for model {} has been reached. Got {}'.format(
-                        self.__class__.__name__, str(err)))
         super(QuotaMixin, self).save(*args, **kwargs)
 
     def override_quota(self, exception_cls=None):

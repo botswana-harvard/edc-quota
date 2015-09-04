@@ -61,12 +61,12 @@ Use your model:
 
 Check progress toward the quota:
 
-	>>> target, model_count, expiration_date = MyModel.objects.get_quota()
-	>>> target
+	>>> quota = MyModel.objects.get_quota()
+	>>> quota.target
 	100
-	>>> model_count
+	>>> quota.model_count
 	25
-	>>> MyModel.objects.quota_reached
+	>>> quota.reached
 	False
 
 Once the target is reached, your Model will raise an exception before more than 100 instances are created  
