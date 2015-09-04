@@ -69,6 +69,8 @@ Check progress toward the quota:
 	100
 	>>> model_count
 	25
+	>>> MyModel.objects.quota_reached()
+	False
 
 Once the target is reached, your Model will raise an exception before more than 100 instances are created  
 
@@ -78,9 +80,26 @@ Once the target is reached, your Model will raise an exception before more than 
 	>>> 	MyModel.objects.create()
 	>>> MyModel.objects.all().count()
 	100
+	>>> MyModel.objects.quota_reached()
+	True
 	>>> MyModel.objects.create()
 	QuotaReachedError: Quota for model MyModel has been reached.
 	
+
+Manager methods:
+
+`Model.objects.set_quota(target, expiration_date)`:
+	Sets a quota. If model instances already exist, the model_count attribute will be updated with the count. 
+	
+`Model.objects.get_quota()`
+	returns a namedtuple with attributes `target, model_count, expiration_date, pk, reached, expired`.
+
+`Model.objects.reached`:
+	returns True if the target has been met or the quota id expired.
+
+`Model.objects.expired`:
+	returns True if the quota id expired.
+
 
 Using with the Controller
 -------------------------

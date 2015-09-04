@@ -1,5 +1,10 @@
 from datetime import date
-
+from collections import namedtuple
+from django import VERSION
+if (VERSION[0], VERSION[1]) == (1, 6):
+    from django.db.models import get_model
+else:
+    from django.apps.apps import get_model
 from django.db import models
 from django.utils import timezone
 from django.db.models.signals import post_save
@@ -8,6 +13,8 @@ from django.dispatch import receiver
 from ..override import Override, OverrideError
 
 from .exceptions import QuotaReachedError
+
+QuotaTuple = namedtuple('QuotaTuple', 'target model_count expiration_date pk reached expired')
 
 
 class Quota(models.Model):
@@ -32,7 +39,7 @@ class Quota(models.Model):
     quota_datetime = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
-        return "{}".format(self.model_name)
+        return "{}(target={})".format(self.model_name, self.target)
 
     class Meta:
         app_label = 'edc_quota'
@@ -43,9 +50,13 @@ class QuotaManager(models.Manager):
     """A manager for a model that uses the QuotaMixin."""
 
     def set_quota(self, target, expiration_date):
+        app_label = self.model._meta.app_label
+        model_name = self.model._meta.object_name
+        model_count = get_model(app_label, model_name).objects.all().count()
         Quota.objects.create(
-            app_label=self.model._meta.app_label,
-            model_name=self.model._meta.object_name,
+            app_label=app_label,
+            model_name=model_name,
+            model_count=model_count,
             target=target,
             expiration_date=expiration_date
         )
@@ -56,19 +67,35 @@ class QuotaManager(models.Manager):
             model_name=self.model._meta.object_name,
         ).order_by('quota_datetime').last()
         try:
-            return quota.target, quota.model_count, quota.expiration_date
+            reached = True if (quota.target <= quota.model_count) else False
+            expired = True if date.today() > quota.expiration_date else False
+            return QuotaTuple(quota.target, quota.model_count, quota.expiration_date, quota.pk, reached, expired)
         except AttributeError:
-            return None, None, None
+            return QuotaTuple(None, None, None, None, None, None)
+
+    @property
+    def quota_reached(self):
+        quota = self.get_quota()
+        if quota.reached:
+            return True
+        elif quota.expired:
+            return True
+        return False
+
+    @property
+    def quota_expired(self):
+        return self.get_quota().expired
 
 
 class QuotaMixin(object):
+
+    err_message = None
 
     quota_pk = models.CharField(max_length=36, null=True)
 
     def save(self, *args, **kwargs):
         if self.quota_reached:
-            raise QuotaReachedError(
-                'Quota for model {} has been reached.'.format(self.__class__.__name__))
+            raise QuotaReachedError(self.err_message)
         super(QuotaMixin, self).save(*args, **kwargs)
 
     @property
@@ -81,15 +108,24 @@ class QuotaMixin(object):
         """
         if self.id:
             return False
-        quota = Quota.objects.filter(
-            app_label=self._meta.app_label,
-            model_name=self._meta.object_name,
-        ).last()
-        if quota.expiration_date > date.today():
-            quota_reached = quota.model_count >= quota.target
-        else:
-            quota_reached = True
-        self.quota_pk = quota.pk
+        try:
+            quota = Quota.objects.filter(
+                app_label=self._meta.app_label,
+                model_name=self._meta.object_name,
+            ).last()
+            reached = self.__class__.objects.quota_reached
+            expired = self.__class__.objects.quota_expired
+            if expired and reached:
+                self.err_message = 'Quota for model {} has expired.'.format(self.__class__.__name__)
+                quota_reached = True
+            elif reached:
+                self.err_message = 'Quota for model {} has been reached.'.format(self.__class__.__name__)
+                quota_reached = True
+            else:
+                quota_reached = False
+            self.quota_pk = quota.pk
+        except Quota.DoesNotExist:
+            quota_reached = False
         return quota_reached
 
 
