@@ -14,10 +14,6 @@ and are contacted by the controller.
 - central controller can update itself on progress of all clients toward reaching the over overall quota
 - central controller can approve for a client to override it's quota.
  
-There are two apps, `edc_quota.controller` and `edc_quota.client`.
-
-`edc_quota.controller` is only needed if you have offline clients collecting "model instances" toward an overall quota.
-
 Installation
 ------------
 
