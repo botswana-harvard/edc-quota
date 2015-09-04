@@ -84,6 +84,7 @@ Once the target is reached, your Model will raise an exception before more than 
 	
 
 Manager methods:
+----------------
 
 `Model.objects.set_quota(target, expiration_date)`:
 	Sets a quota. If model instances already exist, the model_count attribute will be updated with the count. 
@@ -91,10 +92,10 @@ Manager methods:
 `Model.objects.get_quota()`
 	returns a namedtuple with attributes `target, model_count, expiration_date, pk, reached, expired`.
 
-`Model.objects.quota_reached`:
+`Model.objects.quota_reached` (property):
 	returns True if the target has been met or the quota id expired.
 
-`Model.objects.quota_expired`:
+`Model.objects.quota_expired` (property):
 	returns True if the quota id expired.
 
 
