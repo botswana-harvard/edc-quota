@@ -10,8 +10,10 @@ from tastypie.test import ResourceTestCase
 from tastypie.utils import make_naive
 
 from edc_quota.override import Override
-from edc_quota.client.models import QuotaMixin, Quota, QuotaModelWithOverride, QuotaManager
+from edc_quota.client.models import QuotaMixin, Quota, QuotaOverride, QuotaManager
 from edc_quota.client.exceptions import QuotaReachedError
+
+from edc_quota.override import OverrideError
 
 tz = pytz.timezone(settings.TIME_ZONE)
 
@@ -32,7 +34,7 @@ class TestQuotaModel(QuotaMixin, models.Model):
         app_label = 'edc_quota'
 
 
-class TestQuotaOverrideModel(QuotaModelWithOverride):
+class TestQuotaOverrideModel(QuotaOverride):
 
     field1 = models.CharField(max_length=10)
 
@@ -253,18 +255,44 @@ class QuotaResourceTest(ResourceTestCase):
         self.assertHttpUnauthorized(resp)
 
     def test_override_quota(self):
-        Quota.objects.create(
+        quota = Quota.objects.create(
             app_label='edc_quota',
             model_name='TestQuotaOverrideModel',
             target=2,
             expiration_date=date.today() + timedelta(days=1)
         )
-        TestQuotaOverrideModel.objects.create()
-        TestQuotaOverrideModel.objects.create()
+        TestQuotaOverrideModel.objects.create(quota = quota)
+        TestQuotaOverrideModel.objects.create(quota=quota)
         override = Override()
         code = override.code
         override = Override(code)
-        confirmation_code = override.confirmation_code
+        override_code = override.confirmation_code
         self.assertIsInstance(TestQuotaOverrideModel.objects.create(
-            override_code=code,
-            confirmation_code=confirmation_code), TestQuotaOverrideModel)
+            request_code=code,
+            override_code=override_code,
+            quota=quota), QuotaOverride)
+
+    def test_override_used(self):
+        """Assert fail on reusing the same code pair"""
+        quota = Quota.objects.create(
+            app_label='edc_quota',
+            model_name='TestQuotaOverrideModel',
+            target=1,
+            expiration_date=date.today() + timedelta(days=1)
+        )
+        TestQuotaOverrideModel.objects.create(quota=quota)
+        override = Override()
+        request_code = override.code
+        override = Override(request_code)
+        override_code = override.confirmation_code
+        test_quota = TestQuotaOverrideModel.objects.create(
+            quota=quota,
+            request_code=request_code,
+            override_code=override_code,
+        )
+        with self.assertRaises(OverrideError):
+            TestQuotaOverrideModel.objects.create(
+                request_code=test_quota.request_code,
+                override_code=test_quota.override_code,
+                quota=quota,
+            )

@@ -105,7 +105,13 @@ class QuotaMixin(object):
         super(QuotaMixin, self).save(*args, **kwargs)
 
 
-class QuotaModelWithOverride(QuotaMixin, models.Model):
+class QuotaOverride(models.Model):
+
+    request_code = models.CharField(
+        max_length=10,
+        blank=True,
+        null=True,
+    )
 
     override_code = models.CharField(
         max_length=10,
@@ -113,11 +119,9 @@ class QuotaModelWithOverride(QuotaMixin, models.Model):
         null=True,
     )
 
-    confirmation_code = models.CharField(
-        max_length=10,
-        blank=True,
-        null=True,
-    )
+    quota = models.ForeignKey(Quota)
+
+    objects = QuotaManager()
 
     def save(self, *args, **kwargs):
         if not self.id:
@@ -125,18 +129,27 @@ class QuotaModelWithOverride(QuotaMixin, models.Model):
             self.quota_pk = quota.pk
             if quota.quota_reached:
                 self.override_quota()
-        super(QuotaMixin, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
+
+    def check_used(self, exception_cls=None):
+        exception_cls = exception_cls or OverrideError
+        if QuotaOverride.objects.filter(override_code=self.override_code):
+            raise exception_cls(
+                'Override code {} has been used already.'.format(self.override_code)
+            )
+        return True
 
     def override_quota(self, exception_cls=None):
         exception_cls = exception_cls or OverrideError
-        override = Override(self.override_code, self.confirmation_code)
+        override = Override(self.request_code, self.override_code)
         if not override.is_valid_combination:
             raise exception_cls(
-                'Invalid code combination. Got {} and {}'.format(override.code, override.confirmation_code))
+                'Invalid code combination. Got {} and {}'.format(override.code, override.override_code))
+        self.check_used()
         return None
 
     class Meta:
-        abstract = True
+        app_label = 'edc_quota'
 
 
 @receiver(post_save, weak=False, dispatch_uid="quota_on_post_save")
