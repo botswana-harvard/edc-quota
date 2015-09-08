@@ -1,3 +1,4 @@
 from .admin import OverrideAdmin
-# from .models import OverrideModel
-from .override import Override, OverrideError, SimpleOverride, Code, CodeError
+from .code import Code
+from .exceptions import CodeError, OverrideError
+from .override import Override, SimpleOverride
