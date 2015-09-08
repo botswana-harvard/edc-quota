@@ -30,6 +30,8 @@ Include the `edc_quota` urls in your project `urls`:
 	urlpatterns += patterns('edc_quota', url(r'^edc_quota/', include('edc_quota.urls')))
 
 
+If you want a link to the Override form from the model, override the admin change_form template for the model. In the tests, the `TestQuotaModel` change_form is placed in `templates/admin/edc_quota/testquotamodel`. See the [django docs](https://docs.djangoproject.com/en/1.8/ref/contrib/admin/#templates-which-may-be-overridden-per-app-or-model "templates-which-may-be-overridden-per-app-or-model") for more information.
+
 Usage
 -----
 
