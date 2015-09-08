@@ -29,7 +29,7 @@ class ControllerQuota(models.Model):
     is_active = models.BooleanField(default=True)
 
     def __str__(self):
-        return "{}".format(self.model_name)
+        return self.model_name
 
     class Meta:
         app_label = 'edc_quota'
@@ -58,7 +58,7 @@ class ControllerQuotaHistory(models.Model):
         editable=False,
         null=True)
 
-    last_contact = models.DateTimeField(
+    contacted = models.DateTimeField(
         editable=False,
         null=True)
 
@@ -67,7 +67,7 @@ class ControllerQuotaHistory(models.Model):
         default=timezone.now)
 
     def __str__(self):
-        return "{}".format(self.model_name)
+        return str(self.quota)
 
     @property
     def clients_contacted_list(self):

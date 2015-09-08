@@ -10,11 +10,9 @@ from tastypie.test import ResourceTestCase
 from tastypie.utils import make_naive
 from tastypie.models import ApiKey
 
-from edc_quota.override import Override
-from edc_quota.client.models import QuotaMixin, Quota, QuotaOverride, QuotaManager
+from edc_quota.client.models import QuotaMixin, Quota, QuotaManager
 from edc_quota.client.exceptions import QuotaReachedError
 
-from edc_quota.override import OverrideError
 
 tz = pytz.timezone(settings.TIME_ZONE)
 
@@ -30,18 +28,6 @@ class TestQuotaModel(QuotaMixin, models.Model):
     def save(self, *args, **kwargs):
         self.field2 = 'erik'
         super(TestQuotaModel, self).save(*args, **kwargs)
-
-    class Meta:
-        app_label = 'edc_quota'
-
-
-class TestQuotaOverrideModel(QuotaOverride):
-
-    field1 = models.CharField(max_length=10)
-
-    field2 = models.CharField(max_length=10)
-
-    objects = QuotaManager()
 
     class Meta:
         app_label = 'edc_quota'

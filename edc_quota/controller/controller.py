@@ -70,18 +70,18 @@ class Controller(object):
 
     def get_all(self):
         """Contacts all registered clients and updates the Quota model."""
-        last_contact = timezone.now()
+        contacted = timezone.now()
         total_model_count = 0
         clients_contacted = []
         for name in self.clients:
             self.clients.get(name).model_count = self.get_client_model_count(name)
             if self.clients.get(name).model_count:
-                self.clients.get(name).last_contact = last_contact
+                self.clients.get(name).contacted = contacted
                 total_model_count += self.clients.get(name).model_count
                 clients_contacted.append(name)
             self.clients.get(name).save()
         self.quota_history.model_count = total_model_count
-        self.quota_history.last_contact = last_contact
+        self.quota_history.contacted = contacted
         self.quota_history.clients_contacted = ','.join(clients_contacted)
         self.quota_history.save()
         self.set_new_targets()

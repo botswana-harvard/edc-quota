@@ -1,1 +1,2 @@
-from .models import Quota, QuotaMixin, QuotaManager, QuotaOverride
+from .admin import QuotaAdmin
+from .models import Quota, QuotaMixin, QuotaManager

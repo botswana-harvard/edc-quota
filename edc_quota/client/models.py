@@ -1,15 +1,19 @@
 from datetime import date
 from collections import namedtuple
-try:
-    from django.apps.apps import get_model
-except ImportError:
-    from django.db.models import get_model
 from django.db import models
+try:
+    from django.apps import apps
+except ImportError:
+    pass
+try:
+    get_model = apps.get_model
+except AttributeError:
+    get_model = models.get_model
 from django.utils import timezone
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from ..override import Override, OverrideError, OverrideModel
+from ..override import Override, OverrideModel
 
 from .exceptions import QuotaReachedError
 
@@ -90,7 +94,7 @@ class QuotaManager(models.Manager):
         return self.get_quota().expired
 
 
-class QuotaMixin(object):
+class QuotaMixin(models.Model):
 
     quota_pk = models.CharField(max_length=36, null=True)
 
@@ -114,52 +118,8 @@ class QuotaMixin(object):
     def override(self, override_code):
         Override(instance=self, request_code=self.request_code, override_code=override_code)
 
-
-class QuotaOverride(models.Model):
-
-    request_code = models.CharField(
-        max_length=10,
-        blank=True,
-        null=True,
-    )
-
-    override_code = models.CharField(
-        max_length=10,
-        blank=True,
-        null=True,
-    )
-
-    quota = models.ForeignKey(Quota)
-
-    objects = QuotaManager()
-
-    def save(self, *args, **kwargs):
-        if not self.id:
-            quota = self.__class__.objects.get_quota()
-            self.quota_pk = quota.pk
-            if quota.quota_reached:
-                self.override_quota()
-        super(QuotaOverride, self).save(*args, **kwargs)
-
-    def check_used(self, exception_cls=None):
-        exception_cls = exception_cls or OverrideError
-        if QuotaOverride.objects.filter(override_code=self.override_code):
-            raise exception_cls(
-                'Override code {} has been used already.'.format(self.override_code)
-            )
-        return True
-
-    def override_quota(self, exception_cls=None):
-        exception_cls = exception_cls or OverrideError
-        override = Override(self.request_code, self.override_code)
-        if not override.is_valid_combination:
-            raise exception_cls(
-                'Invalid code combination. Got {} and {}'.format(override.code, override.override_code))
-        self.check_used()
-        return None
-
     class Meta:
-        app_label = 'edc_quota'
+        abstract = True
 
 
 @receiver(post_save, weak=False, dispatch_uid="quota_on_post_save")
