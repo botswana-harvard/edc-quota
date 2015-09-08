@@ -2,6 +2,9 @@ from django.contrib import admin
 
 from .code import Code
 from .models import OverrideModel
+from django.core.urlresolvers import reverse
+from django.http import HttpResponseRedirect
+from django.core.urlresolvers import resolve
 
 
 class OverrideAdmin(admin.ModelAdmin):
@@ -16,5 +19,10 @@ class OverrideAdmin(admin.ModelAdmin):
         form = super(OverrideAdmin, self).get_form(request, obj, **kwargs)
         form.base_fields['request_code'].initial = str(Code())
         return form
+
+    def response_add(self, request, obj, post_url_continue=None):
+        """This makes the response after adding go to another apps changelist for some model"""
+        path = resolve(request.GET.get('next'))
+        return HttpResponseRedirect(reverse(path.view_name))
 
 admin.site.register(OverrideModel, OverrideAdmin)

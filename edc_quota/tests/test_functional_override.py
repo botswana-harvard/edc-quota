@@ -6,6 +6,8 @@ from django.db import models
 from selenium.webdriver.common.keys import Keys
 from django.contrib.auth.models import User
 
+from ..override.code import Code
+
 
 class TestFunctionalOverride(StaticLiveServerTestCase):
 
@@ -38,3 +40,15 @@ class TestFunctionalOverride(StaticLiveServerTestCase):
         time.sleep(1)
         element = self.browser.find_element_by_id('id_override_code')
         self.assertEqual(element.get_attribute('value'), '')
+
+    def test_fill_override(self):
+        self.login()
+        time.sleep(1)
+        self.browser.get(self.live_server_url + '/admin/edc_quota/testquotamodel/add/')
+        time.sleep(1)
+        self.browser.find_element_by_id('override_quota').click()
+        time.sleep(1)
+        req_code = self.browser.find_element_by_id('id_request_code').get_attribute('value')
+        override_code = Code(req_code).validation_code
+        self.browser.find_element_by_id('id_override_code').send_keys(override_code + Keys.RETURN)
+        time.sleep(2)
