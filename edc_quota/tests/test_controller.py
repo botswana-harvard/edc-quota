@@ -8,10 +8,12 @@ from django.test import TestCase
 from django.contrib.auth.models import User
 from tastypie.test import ResourceTestCase
 from tastypie.utils import make_naive
+from tastypie.models import ApiKey
 from edc_quota.client.models import QuotaMixin, Quota as ClientQuota
 from edc_quota.controller.models import Client, ControllerQuotaHistory, ControllerQuota
 from edc_quota.controller.controller import Controller
 from collections import defaultdict
+
 
 tz = pytz.timezone(settings.TIME_ZONE)
 
@@ -168,7 +170,7 @@ class TestResource(ResourceTestCase):
         self.username = 'erik'
         self.password = 'pass'
         self.user = User.objects.create_user(self.username, 'erik@example.com', self.password)
-
+        self.api_client_key = ApiKey.objects.get_or_create(user=self.user)[0].key
         self.quota = ControllerQuota.objects.create(
             app_label='edc_quota',
             model_name='TestQuotaModel2',
@@ -181,6 +183,9 @@ class TestResource(ResourceTestCase):
             app_label='edc_quota',
             model_name='TestQuotaModel2',
             is_active=True)
+
+    def get_credentials_api_key(self):
+        return self.create_apikey(username=self.username, api_key=self.api_client_key)
 
     def get_credentials(self):
         return self.create_basic(username=self.username, password=self.password)
@@ -196,12 +201,13 @@ class TestResource(ResourceTestCase):
             'target': 30,
             'expiration_date': date.today()
         }
+        headers = {'Content-type': 'application/json'}
         self.assertHttpCreated(
             self.api_client.post(
                 '/api/v1/quota/',
                 format='json',
                 data=resource_data,
-                authentication=self.get_credentials()
+                authentication=self.get_credentials_api_key()
             )
         )
         self.assertEqual(ClientQuota.objects.count(), 1)

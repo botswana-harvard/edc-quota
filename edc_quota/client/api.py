@@ -2,6 +2,7 @@ from tastypie.resources import ModelResource
 from tastypie.authentication import ApiKeyAuthentication
 
 from .models import Quota
+from tastypie.authorization import Authorization
 
 
 class QuotaResource(ModelResource):
@@ -16,4 +17,5 @@ class QuotaResource(ModelResource):
             'app_label': ['exact'],
             'model_name': ['iexact'],
         }
+        authorization = Authorization()
         authentication = ApiKeyAuthentication()
