@@ -1,13 +1,13 @@
 import time
 
 from selenium import webdriver
-from django.contrib.staticfiles.testing import StaticLiveServerTestCase
-from django.db import models
+# from django.contrib.staticfiles.testing import StaticLiveServerTestCase
+from django.test import LiveServerTestCase
 from selenium.webdriver.common.keys import Keys
 from django.contrib.auth.models import User
 
 
-class TestFunctionalOverride(StaticLiveServerTestCase):
+class TestFunctionalOverride(LiveServerTestCase):
 
     username = 'tuser'
     password = 'tpass'
