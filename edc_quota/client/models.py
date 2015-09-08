@@ -7,7 +7,7 @@ except ImportError:
     pass
 try:
     get_model = apps.get_model
-except AttributeError:
+except NameError:
     get_model = models.get_model
 from django.utils import timezone
 from django.db.models.signals import post_save
