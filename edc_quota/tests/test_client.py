@@ -11,8 +11,10 @@ from tastypie.utils import make_naive
 from tastypie.models import ApiKey
 
 from edc_quota.override import Override
-from edc_quota.client.models import QuotaMixin, Quota, QuotaModelWithOverride, QuotaManager
+from edc_quota.client.models import QuotaMixin, Quota, QuotaOverride, QuotaManager
 from edc_quota.client.exceptions import QuotaReachedError
+
+from edc_quota.override import OverrideError
 
 tz = pytz.timezone(settings.TIME_ZONE)
 
@@ -33,7 +35,7 @@ class TestQuotaModel(QuotaMixin, models.Model):
         app_label = 'edc_quota'
 
 
-class TestQuotaOverrideModel(QuotaModelWithOverride):
+class TestQuotaOverrideModel(QuotaOverride):
 
     field1 = models.CharField(max_length=10)
 
@@ -253,20 +255,3 @@ class QuotaResourceTest(ResourceTestCase):
         """Assert the api does put"""
         resp = self.api_client.post('/api/v1/quota/', format='json', data={})
         self.assertHttpUnauthorized(resp)
-
-    def test_override_quota(self):
-        Quota.objects.create(
-            app_label='edc_quota',
-            model_name='TestQuotaOverrideModel',
-            target=2,
-            expiration_date=date.today() + timedelta(days=1)
-        )
-        TestQuotaOverrideModel.objects.create()
-        TestQuotaOverrideModel.objects.create()
-        override = Override()
-        code = override.code
-        override = Override(code)
-        confirmation_code = override.confirmation_code
-        self.assertIsInstance(TestQuotaOverrideModel.objects.create(
-            override_code=code,
-            confirmation_code=confirmation_code), TestQuotaOverrideModel)

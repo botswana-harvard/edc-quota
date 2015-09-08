@@ -87,19 +87,19 @@ class Client(models.Model):
 
     hostname = models.CharField(max_length=25)
 
-    app_label = models.CharField(max_length=25)
-
-    model_name = models.CharField(max_length=25)
-
     port = models.IntegerField(default=80)
 
     api_name = models.CharField(max_length=25, default='v1')
 
-    last_contact = models.DateTimeField(
-        editable=False,
-        null=True)
+    app_label = models.CharField(max_length=25)
+
+    model_name = models.CharField(max_length=25)
 
     target = models.IntegerField(
+        editable=False,
+        default=0)
+
+    model_count = models.IntegerField(
         editable=False,
         default=0)
 
@@ -107,10 +107,18 @@ class Client(models.Model):
         editable=False,
         null=True)
 
+    contacted = models.DateTimeField(
+        editable=False,
+        null=True)
+
     is_active = models.BooleanField(default=True)
 
     def __str__(self):
         return "{}".format(self.hostname)
+
+    def quota(self):
+        return ControllerQuota.objects.get(app_label=self.app_label, model_name=self.model_name)
+    quota.short_description = 'Quota'
 
     @property
     def url(self):

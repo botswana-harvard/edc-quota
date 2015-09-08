@@ -134,7 +134,68 @@ To get/post to a single client or a select list of clients, pass a list of clien
  
 Overriding a Quota
 ------------------
-(To be completed)
 
 Once the quota has been reached, a user may bypass the quota one instance at a time using a pair of codes; namely the _override request code_ and the _override code_. In the exception message the user is told the quota has been reached and is shown the _override request code_. The _override request code_ is needed to create an _override code_ on the controller. The codes are entered into the Override model on the client and referenced by the save method of the target model.
-  
+
+Set a quota:
+
+    >>> TestQuotaModel.objects.set_quota(2, date.today())
+
+Reach the quota:
+
+    >>> TestQuotaModel.objects.create()
+    >>> TestQuotaModel.objects.create()
+    >>> TestQuotaModel.objects.create()
+	QuotaReachedError: Quota for model MyModel has been reached.
+
+To try to override, first request an override code:
+
+    >>> test_quota_model = TestQuotaModel()
+    >>> test_quota_model.request_code = Code()
+    >>> test_quota_model.request_code
+	'3UFY9'    
+
+Your supervisor returns an override code based on your request_code
+
+    >>> override_code = Code('3UFY9').validation_code
+    >>> override_code
+    'NC4GT'
+
+Apply override code and save the model instance:
+
+    >>> test_quota_model.override('NC4GT')
+    >>> test_quota_model.save()
+
+Overriding a Quota in Admin
+---------------------------
+
+(To be completed)
+
+For a model with a quota, the ModelForm redirects to an interim form that shows the user a request code and presents a form to accept an override code. If a valid override code is entered the interim form will submit and the model is saved. If the user does not have a valid override code, they can cancel and be returned to the model form or some other page, such as a dashboard.
+
+SimpleOverride
+--------------
+
+SimpleOverride does not include any models and is the base class for `Override`.
+
+Get an request code:
+
+    >>> from edc_quota import Override
+    >>> override = Override()
+    >>> request_code = override.request_code
+    >>> print(request_code)
+    '3UFY9'
+
+Ask for a confirmation code
+
+    >>> from edc_quota import Override
+    >>> override = Override(request_code='3UFY9')
+    >>> override_code = override.override_code
+    >>> print(override_code)
+    'NC4GT'
+
+Validate the pair of codes
+
+    >>> from edc_quota import Override
+    >>> if Override('3UFY9', 'NC4GT').is_valid_combination:
+    >>>>    print('the codes are a valid pair')

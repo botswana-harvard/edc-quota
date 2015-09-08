@@ -9,7 +9,7 @@ from django.utils import timezone
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from ..override import Override, OverrideError
+from ..override import Override, OverrideError, OverrideModel
 
 from .exceptions import QuotaReachedError
 
@@ -94,18 +94,34 @@ class QuotaMixin(object):
 
     quota_pk = models.CharField(max_length=36, null=True)
 
+    request_code = models.CharField(max_length=10, null=True, editable=False)
+
     def save(self, *args, **kwargs):
         if not self.id:
             quota = self.__class__.objects.get_quota()
             if quota.pk:
                 self.quota_pk = quota.pk
                 if quota.quota_reached:
-                    raise QuotaReachedError('Quota for model {} has been reached or exceeded. Got {} >= {}.'.format(
-                        self.__class__.__name__, quota.model_count, quota.target))
+                    try:
+                        OverrideModel.objects.get(
+                            request_code=self.request_code, instance_pk__isnull=True)
+                    except OverrideModel.DoesNotExist:
+                        raise QuotaReachedError(
+                            'Quota for model {} has been reached or exceeded. Got {} >= {}.'.format(
+                                self.__class__.__name__, quota.model_count, quota.target))
         super(QuotaMixin, self).save(*args, **kwargs)
 
+    def override(self, override_code):
+        Override(instance=self, request_code=self.request_code, override_code=override_code)
 
-class QuotaModelWithOverride(QuotaMixin, models.Model):
+
+class QuotaOverride(models.Model):
+
+    request_code = models.CharField(
+        max_length=10,
+        blank=True,
+        null=True,
+    )
 
     override_code = models.CharField(
         max_length=10,
@@ -113,11 +129,9 @@ class QuotaModelWithOverride(QuotaMixin, models.Model):
         null=True,
     )
 
-    confirmation_code = models.CharField(
-        max_length=10,
-        blank=True,
-        null=True,
-    )
+    quota = models.ForeignKey(Quota)
+
+    objects = QuotaManager()
 
     def save(self, *args, **kwargs):
         if not self.id:
@@ -125,18 +139,27 @@ class QuotaModelWithOverride(QuotaMixin, models.Model):
             self.quota_pk = quota.pk
             if quota.quota_reached:
                 self.override_quota()
-        super(QuotaMixin, self).save(*args, **kwargs)
+        super(QuotaOverride, self).save(*args, **kwargs)
+
+    def check_used(self, exception_cls=None):
+        exception_cls = exception_cls or OverrideError
+        if QuotaOverride.objects.filter(override_code=self.override_code):
+            raise exception_cls(
+                'Override code {} has been used already.'.format(self.override_code)
+            )
+        return True
 
     def override_quota(self, exception_cls=None):
         exception_cls = exception_cls or OverrideError
-        override = Override(self.override_code, self.confirmation_code)
+        override = Override(self.request_code, self.override_code)
         if not override.is_valid_combination:
             raise exception_cls(
-                'Invalid code combination. Got {} and {}'.format(override.code, override.confirmation_code))
+                'Invalid code combination. Got {} and {}'.format(override.code, override.override_code))
+        self.check_used()
         return None
 
     class Meta:
-        abstract = True
+        app_label = 'edc_quota'
 
 
 @receiver(post_save, weak=False, dispatch_uid="quota_on_post_save")

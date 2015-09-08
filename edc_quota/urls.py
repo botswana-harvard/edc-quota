@@ -20,6 +20,7 @@ from edc_quota.client.api import QuotaResource
 
 api = Api(api_name='v1')
 api.register(QuotaResource())
+admin.autodiscover()
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
