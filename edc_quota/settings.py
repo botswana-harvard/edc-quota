@@ -61,7 +61,7 @@ MIDDLEWARE_CLASSES = [
 if django_version.startswith('1.6'):
     MIDDLEWARE_CLASSES.remove('django.middleware.security.SecurityMiddleware')
     MIDDLEWARE_CLASSES.remove('django.contrib.auth.middleware.SessionAuthenticationMiddleware')
-if django_version.startswith('1.7'):
+else:
     MIDDLEWARE_CLASSES.remove('django.middleware.security.SecurityMiddleware')
 
 MIDDLEWARE_CLASSES = tuple(MIDDLEWARE_CLASSES)
