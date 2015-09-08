@@ -17,6 +17,7 @@ from django.contrib import admin
 from django.conf.urls import include, url
 from tastypie.api import Api
 from edc_quota.client.api import QuotaResource
+# from edc_quota.client.views import QuotaOverrideView
 
 api = Api(api_name='v1')
 api.register(QuotaResource())
@@ -24,5 +25,6 @@ admin.autodiscover()
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^api/', include(api.urls))
+    url(r'^api/', include(api.urls)),
+#     url(r'^override_quota/', QuotaOverrideView.as_view(), name='override_quota'),
 ]
