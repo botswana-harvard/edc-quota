@@ -3,7 +3,9 @@ from django.db import models
 
 class OverrideModel(models.Model):
 
-    request_code = models.CharField(max_length=10, unique=True, editable=False)
+    request_code = models.CharField(
+        max_length=10,
+        unique=True)
 
     override_code = models.CharField(max_length=10)
 
