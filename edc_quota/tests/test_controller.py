@@ -184,11 +184,8 @@ class TestResource(ResourceTestCase):
             model_name='TestQuotaModel2',
             is_active=True)
 
-    def get_credentials_api_key(self):
-        return self.create_apikey(username=self.username, api_key=self.api_client_key)
-
     def get_credentials(self):
-        return self.create_basic(username=self.username, password=self.password)
+        return self.create_apikey(username=self.username, api_key=self.api_client_key)
 
     def test_api_post_list(self):
         """Asserts api can be used to create a new Quota instance on the client."""
@@ -201,13 +198,12 @@ class TestResource(ResourceTestCase):
             'target': 30,
             'expiration_date': date.today()
         }
-        headers = {'Content-type': 'application/json'}
         self.assertHttpCreated(
             self.api_client.post(
                 '/api/v1/quota/',
                 format='json',
                 data=resource_data,
-                authentication=self.get_credentials_api_key()
+                authentication=self.get_credentials()
             )
         )
         self.assertEqual(ClientQuota.objects.count(), 1)
