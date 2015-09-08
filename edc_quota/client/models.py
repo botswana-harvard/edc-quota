@@ -9,7 +9,7 @@ from django.utils import timezone
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from ..override import Override, OverrideError
+from ..override import Override, OverrideError, OverrideModel
 
 from .exceptions import QuotaReachedError
 
@@ -94,15 +94,25 @@ class QuotaMixin(object):
 
     quota_pk = models.CharField(max_length=36, null=True)
 
+    request_code = models.CharField(max_length=10, null=True, editable=False)
+
     def save(self, *args, **kwargs):
         if not self.id:
             quota = self.__class__.objects.get_quota()
             if quota.pk:
                 self.quota_pk = quota.pk
                 if quota.quota_reached:
-                    raise QuotaReachedError('Quota for model {} has been reached or exceeded. Got {} >= {}.'.format(
-                        self.__class__.__name__, quota.model_count, quota.target))
+                    try:
+                        OverrideModel.objects.get(
+                            request_code=self.request_code, instance_pk__isnull=True)
+                    except OverrideModel.DoesNotExist:
+                        raise QuotaReachedError(
+                            'Quota for model {} has been reached or exceeded. Got {} >= {}.'.format(
+                                self.__class__.__name__, quota.model_count, quota.target))
         super(QuotaMixin, self).save(*args, **kwargs)
+
+    def override(self, override_code):
+        Override(instance=self, request_code=self.request_code, override_code=override_code)
 
 
 class QuotaOverride(models.Model):
@@ -129,7 +139,7 @@ class QuotaOverride(models.Model):
             self.quota_pk = quota.pk
             if quota.quota_reached:
                 self.override_quota()
-        super().save(*args, **kwargs)
+        super(QuotaOverride, self).save(*args, **kwargs)
 
     def check_used(self, exception_cls=None):
         exception_cls = exception_cls or OverrideError
