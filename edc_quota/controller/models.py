@@ -87,23 +87,27 @@ class Client(models.Model):
 
     hostname = models.CharField(max_length=25)
 
-    app_label = models.CharField(max_length=25)
-
-    model_name = models.CharField(max_length=25)
-
     port = models.IntegerField(default=80)
 
     api_name = models.CharField(max_length=25, default='v1')
 
-    last_contact = models.DateTimeField(
-        editable=False,
-        null=True)
+    app_label = models.CharField(max_length=25)
+
+    model_name = models.CharField(max_length=25)
 
     target = models.IntegerField(
         editable=False,
         default=0)
 
+    model_count = models.IntegerField(
+        editable=False,
+        default=0)
+
     expiration_date = models.DateField(
+        editable=False,
+        null=True)
+
+    last_contact = models.DateTimeField(
         editable=False,
         null=True)
 
