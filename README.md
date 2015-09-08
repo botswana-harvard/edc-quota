@@ -149,22 +149,22 @@ Reach the quota:
     >>> TestQuotaModel.objects.create()
 	QuotaReachedError: Quota for model MyModel has been reached.
 
-Try to override:
 
-* first request an override code:
+
+To try to override, first request an override code:
 
     >>> test_quota_model = TestQuotaModel()
     >>> test_quota_model.request_code = Code()
     >>> test_quota_model.request_code
 	'3UFY9'    
 
-* your supervisor returns an override code based on your request_code
+Your supervisor returns an override code based on your request_code
 
     >>> override_code = Code('3UFY9').validation_code
     >>> override_code
     'NC4GT'
 
-* apply override code:
+Apply override code and save the model instance:
 
     >>> test_quota_model.override('NC4GT')
     >>> test_quota_model.save()
