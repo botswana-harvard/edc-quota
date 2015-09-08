@@ -8,6 +8,7 @@ from django.test import TestCase
 from django.contrib.auth.models import User
 from tastypie.test import ResourceTestCase
 from tastypie.utils import make_naive
+from tastypie.models import ApiKey
 
 from edc_quota.override import Override
 from edc_quota.client.models import QuotaMixin, Quota, QuotaModelWithOverride, QuotaManager
@@ -196,13 +197,13 @@ class QuotaResourceTest(ResourceTestCase):
         self.username = 'erik'
         self.password = 'pass'
         self.user = User.objects.create_user(self.username, 'erik@example.com', self.password)
-
+        self.api_key = ApiKey.objects.get_or_create(user=self.user)[0].key
         TestQuotaModel.objects.set_quota(100, date.today() + timedelta(days=1))
 
         self.quota = Quota.objects.last()
 
     def get_credentials(self):
-        return self.create_basic(username=self.username, password=self.password)
+        return self.create_apikey(username=self.username, api_key=self.api_key)
 
     def test_get_list_unauthorzied(self):
         self.assertHttpUnauthorized(self.api_client.get('/api/v1/quota/', format='json'))
@@ -214,16 +215,17 @@ class QuotaResourceTest(ResourceTestCase):
         resp = self.api_client.get('/api/v1/quota/', format='json', authentication=self.get_credentials())
         self.assertValidJSONResponse(resp)
         self.assertEqual(len(self.deserialize(resp)['objects']), 1)
-        self.assertEqual(self.deserialize(resp)['objects'][0], {
-            'id': self.quota.pk,
+        quota_json = {
             'target': 100,
+            'expiration_date': self.quota.expiration_date.isoformat(),
             'model_count': 3,
+            'quota_datetime': make_naive(self.quota.quota_datetime).isoformat(),
+            'id': self.quota.pk,
             'app_label': 'edc_quota',
             'model_name': 'TestQuotaModel',
-            'quota_datetime': make_naive(self.quota.quota_datetime).isoformat(),
-            'expiration_date': self.quota.expiration_date.isoformat(),
             'resource_uri': '/api/v1/quota/{0}/'.format(self.quota.pk)
-        })
+        }
+        self.assertEqual(self.deserialize(resp)['objects'][0], quota_json)
 
     def test_get_with_model_name_json(self):
         """Asserts api returns a full list."""
