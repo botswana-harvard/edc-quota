@@ -5,6 +5,7 @@ from datetime import date, timedelta
 from django.conf import settings
 from django.db import models
 from django.test import TestCase
+from django.contrib import admin
 from django.contrib.auth.models import User
 from tastypie.test import ResourceTestCase
 from tastypie.utils import make_naive
@@ -31,6 +32,11 @@ class TestQuotaModel(QuotaMixin, models.Model):
 
     class Meta:
         app_label = 'edc_quota'
+
+
+class TestQuotaModelAdmin(admin.ModelAdmin):
+    model = TestQuotaModel
+admin.site.register(TestQuotaModel, TestQuotaModelAdmin)
 
 
 class TestQuota(TestCase):

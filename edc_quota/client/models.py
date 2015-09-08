@@ -7,13 +7,14 @@ except ImportError:
     pass
 try:
     get_model = apps.get_model
-except AttributeError:
+except NameError:
     get_model = models.get_model
 from django.utils import timezone
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from ..override import Override, OverrideModel
+from ..override.models import OverrideModel
+from ..override.override import Override
 
 from .exceptions import QuotaReachedError
 
