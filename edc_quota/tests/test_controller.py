@@ -8,10 +8,12 @@ from django.test import TestCase
 from django.contrib.auth.models import User
 from tastypie.test import ResourceTestCase
 from tastypie.utils import make_naive
+from tastypie.models import ApiKey
 from edc_quota.client.models import QuotaMixin, Quota as ClientQuota
 from edc_quota.controller.models import Client, ControllerQuotaHistory, ControllerQuota
 from edc_quota.controller.controller import Controller
 from collections import defaultdict
+
 
 tz = pytz.timezone(settings.TIME_ZONE)
 
@@ -168,7 +170,7 @@ class TestResource(ResourceTestCase):
         self.username = 'erik'
         self.password = 'pass'
         self.user = User.objects.create_user(self.username, 'erik@example.com', self.password)
-
+        self.api_client_key = ApiKey.objects.get_or_create(user=self.user)[0].key
         self.quota = ControllerQuota.objects.create(
             app_label='edc_quota',
             model_name='TestQuotaModel2',
@@ -183,7 +185,7 @@ class TestResource(ResourceTestCase):
             is_active=True)
 
     def get_credentials(self):
-        return self.create_basic(username=self.username, password=self.password)
+        return self.create_apikey(username=self.username, api_key=self.api_client_key)
 
     def test_api_post_list(self):
         """Asserts api can be used to create a new Quota instance on the client."""
