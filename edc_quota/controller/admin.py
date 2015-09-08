@@ -24,7 +24,7 @@ admin.site.register(ControllerQuotaHistory, ControllerQuotaHistoryAdmin)
 class ClientAdmin(admin.ModelAdmin):
     date_hierarchy = 'expiration_date'
     fields = ('hostname', 'app_label', 'model_name', 'port', 'is_active')
-    list_display = ('hostname', 'app_label', 'model_name', 'target', 'model_count')
-    list_filter = ('app_label', 'model_name', 'is_active', 'expiration_date')
+    list_display = ('hostname', 'contacted', 'quota', 'app_label', 'model_name', 'target', 'model_count')
+    list_filter = ('app_label', 'model_name', 'is_active', 'expiration_date', 'contacted', 'hostname')
     search_fields = ('app_label', 'model_name')
 admin.site.register(Client, ClientAdmin)

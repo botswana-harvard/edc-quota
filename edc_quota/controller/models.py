@@ -107,7 +107,7 @@ class Client(models.Model):
         editable=False,
         null=True)
 
-    last_contact = models.DateTimeField(
+    contacted = models.DateTimeField(
         editable=False,
         null=True)
 
@@ -115,6 +115,10 @@ class Client(models.Model):
 
     def __str__(self):
         return "{}".format(self.hostname)
+
+    def quota(self):
+        return ControllerQuota.objects.get(app_label=self.app_label, model_name=self.model_name)
+    quota.short_description = 'Quota'
 
     @property
     def url(self):
