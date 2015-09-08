@@ -1,0 +1,11 @@
+{% extends "admin/change_form.html" %}
+{% load i18n admin_urls %}
+
+{% block submit_buttons_bottom %}
+    <div class="submit-row">
+        <form action={% url 'admin:edc_quota_overridemodel_add' %} >
+            <input type="button" value='Overide Quota' id="override_quota" name="override_quota" />
+        </form>
+    </div>
+    {{ block.super }}
+{% endblock %}
