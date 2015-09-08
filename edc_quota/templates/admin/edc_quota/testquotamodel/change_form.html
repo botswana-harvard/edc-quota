@@ -1,0 +1,9 @@
+{% extends "admin/change_form.html" %}
+{% load i18n admin_urls %}
+
+{% block submit_buttons_bottom %}
+    <div class="submit-row">
+        <A href="{% url 'admin:edc_quota_overridemodel_add' %}?next={{ next_url }}" name="override_quota" id="override_quota">Override Quota</A>
+    </div>
+    {{ block.super }}
+{% endblock %}

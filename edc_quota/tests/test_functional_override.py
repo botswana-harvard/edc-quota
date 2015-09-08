@@ -15,7 +15,6 @@ class TestFunctionalOverride(StaticLiveServerTestCase):
 
     def setUp(self):
         User.objects.create_superuser(self.username, self.email, self.password)
-        super().setUp()
         self.browser = webdriver.Firefox()
         self.browser.set_window_size(1400, 1000)
         self.browser.get(self.live_server_url + '/admin/')
@@ -32,12 +31,10 @@ class TestFunctionalOverride(StaticLiveServerTestCase):
 
     def test_override_button(self):
         self.login()
-        time.sleep(2)
+        time.sleep(1)
         self.browser.get(self.live_server_url + '/admin/edc_quota/testquotamodel/add/')
-        time.sleep(2)
-        element = self.browser.find_element_by_id('override_quota')
-        element.click()
-        time.sleep(2)
+        time.sleep(1)
+        self.browser.find_element_by_id('override_quota').click()
+        time.sleep(1)
         element = self.browser.find_element_by_id('id_override_code')
         self.assertEqual(element.get_attribute('value'), '')
-        
