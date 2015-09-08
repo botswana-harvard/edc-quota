@@ -44,9 +44,6 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'tastypie',
     'getresults_identifier',
-    'edc_quota.controller',
-    'edc_quota.client',
-    'edc_quota.override',
     'edc_quota',
 )
 

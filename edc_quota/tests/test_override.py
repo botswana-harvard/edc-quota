@@ -1,13 +1,10 @@
-from datetime import timedelta, date
+from datetime import date
 from django.test import TestCase
 
-from edc_quota.client.models import Quota
-# from edc_quota.models import Override as OverrideModel
-from edc_quota.override import SimpleOverride, Override, CodeError, Code
+from edc_quota.override import SimpleOverride, Override, Code
 
 from .test_client import TestQuotaModel
 from edc_quota.client.exceptions import QuotaReachedError
-from edc_quota.override.models import OverrideModel
 
 
 class TestOverride(TestCase):
@@ -121,7 +118,7 @@ class TestOverride(TestCase):
 #             request_code=code,
 #             override_code=override_code,
 #             quota=quota), QuotaOverride)
-# 
+#
 #     def test_override_used(self):
 #         """Assert fail on reusing the same code pair"""
 #         quota = Quota.objects.create(

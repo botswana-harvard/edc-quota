@@ -1,6 +1,7 @@
 from getresults_identifier import ShortIdentifier
-from edc_quota.override.models import OverrideModel
 from django.db import IntegrityError, transaction
+
+from .models import OverrideModel
 
 
 class OverrideError(Exception):

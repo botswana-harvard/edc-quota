@@ -83,14 +83,14 @@ class TestController(TestCase):
         controller.get_all()
         quota_history = ControllerQuotaHistory.objects.filter(quota=controller.quota).last()
         self.assertEqual(quota_history.model_count, 5 * len(quota_history.clients_contacted.split(',')))
-        self.assertIsNotNone(quota_history.last_contact)
+        self.assertIsNotNone(quota_history.contacted)
 
     def test_post_all(self):
         controller = DummyController(self.quota)
         controller.get_all()
         controller.post_all()
         for client in Client.objects.all():
-            self.assertEqual(client.last_contact, controller.quota_history.last_contact)
+            self.assertEqual(client.contacted, controller.quota_history.contacted)
             self.assertEqual(client.target, 0)
             self.assertEqual(client.expiration_date, controller.quota_history.expiration_date)
         controller = DummyController(self.quota)
@@ -98,7 +98,7 @@ class TestController(TestCase):
         controller.get_all()
         controller.post_all()
         for client in Client.objects.all():
-            self.assertEqual(client.last_contact, controller.quota_history.last_contact)
+            self.assertEqual(client.contacted, controller.quota_history.contacted)
             self.assertGreaterEqual(client.target, 5)
             self.assertEqual(client.expiration_date, controller.quota_history.expiration_date)
 
