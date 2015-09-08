@@ -13,7 +13,8 @@ from django.utils import timezone
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from ..override import Override, OverrideModel
+from ..override.models import OverrideModel
+from ..override.override import Override
 
 from .exceptions import QuotaReachedError
 
