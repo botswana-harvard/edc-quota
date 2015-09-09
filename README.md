@@ -15,7 +15,9 @@ and are contacted by the controller.
 - central controller can approve for a client to override it's quota.
  
 Installation
-------------
+============
+
+__settings.py__
 
 Add the `edc_quota` app to your project `settings`:
 
@@ -25,15 +27,27 @@ Add the `edc_quota` app to your project `settings`:
 	...
 	)
 
+__urls.py__
+
 Include the `edc_quota` urls in your project `urls`:
 
 	urlpatterns += patterns('edc_quota', url(r'^edc_quota/', include('edc_quota.urls')))
 
 
-If you want a link to the Override form from the model, override the admin change_form template for the model. In the tests, the `TestQuotaModel` change_form is placed in `templates/admin/edc_quota/testquotamodel`. See the [django docs](https://docs.djangoproject.com/en/1.8/ref/contrib/admin/#templates-which-may-be-overridden-per-app-or-model "templates-which-may-be-overridden-per-app-or-model") for more information.
+__Templates__
+
+Copy the `change_form.html` in the templates folder of `edc_quota` to your templates folder. For example, if your quota model is named `bcpp_subject.pima_vl`:
+
+    /templates
+        /admin
+            /bcpp_subject
+                /pimavl
+                    change_form.html`
+
+The template extends the `admin/change_form.html` to adds a link to the Override ModelForm just above the Save button. See the [django docs](https://docs.djangoproject.com/en/1.8/ref/contrib/admin/#templates-which-may-be-overridden-per-app-or-model "templates-which-may-be-overridden-per-app-or-model") for more information on how to extend admin templates.
 
 Usage
------
+=====
 
 Declare your model with the `QuotaMixin` and the `QuotaManager`:
 
@@ -86,27 +100,27 @@ Once the target is reached, your Model will raise an exception before more than 
 	
 
 Manager methods
----------------
+===============
 
-`Model.objects.set_quota(target, expiration_date)`:
-
+`Model.objects.set_quota(target, expiration_date)`
+--------------------------------------------------
 Sets a quota. If model instances already exist, the model_count attribute will be updated with the count. 
 	
 `Model.objects.get_quota()`
-
+---------------------------
 Returns a namedtuple with attributes `target, model_count, expiration_date, pk, reached, expired`.
 
-`Model.objects.quota_reached` (property):
+`Model.objects.quota_reached`
+-----------------------------
+Returns True if the target has been met or the quota is expired (property).
 
-Returns True if the target has been met or the quota is expired.
-
-`Model.objects.quota_expired` (property):
-
-Returns True if the quota is expired.
+`Model.objects.quota_expired`
+-----------------------------
+Returns True if the quota is expired (property).
 
 
-Using with the Controller
--------------------------
+Use with the Controller
+=======================
 
 The controller gets model_counts (`get`) from each registered client, calculates new quota targets, and updates quota targets (`put`) to each client. It manages one quota instance per controller instance.
 
@@ -135,7 +149,7 @@ To get/post to a single client or a select list of clients, pass a list of clien
     controller.post_all()
 
 Setup Controller and Clients
-----------------------------
+============================
 
 The REST API (TastyPie) is set to use ApikeyAuthentication. You can use the management command `setupedcquota` to create a special user account, APIKEY and group with add/change permissions. For example:
 
@@ -154,7 +168,7 @@ On each of the clients: (may share the apikey)
 	User 'edc_quota': apikey b30faa54acd475b9b0d96dd7d9bc54e59856cacc
 
 Overriding a Quota
-------------------
+==================
 
 Once the quota has been reached, a user may bypass the quota one instance at a time using a pair of codes; namely the _override request code_ and the _override code_. In the exception message the user is told the quota has been reached and is shown the _override request code_. The _override request code_ is needed to create an _override code_ on the controller. The codes are entered into the Override model on the client and referenced by the save method of the target model.
 
@@ -188,14 +202,12 @@ Apply override code and save the model instance:
     >>> test_quota_model.save()
 
 Overriding a Quota in Admin
----------------------------
-
-(To be completed)
+===========================
 
 For a model with a quota, the ModelForm redirects to an interim form that shows the user a request code and presents a form to accept an override code. If a valid override code is entered the interim form will submit and the model is saved. If the user does not have a valid override code, they can cancel and be returned to the model form or some other page, such as a dashboard.
 
 SimpleOverride
---------------
+==============
 
 SimpleOverride does not include any models and is the base class for `Override`.
 
