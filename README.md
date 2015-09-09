@@ -133,7 +133,26 @@ To get/post to a single client or a select list of clients, pass a list of clien
     controller = Controller(quota, clients=['host1', 'host2'])
     controller.get_all()
     controller.post_all()
- 
+
+Setup Controller and Clients
+----------------------------
+
+The REST API (TastyPie) is set to use ApikeyAuthentication. You can use the management command `setupedcquota` to create a special user account, APIKEY and group with add/change permissions. For example:
+
+On the controller:
+
+	>>>python manage.py setupedcquota
+	User 'edc_quota' has been created
+	User 'edc_quota': added to group 'edc_quota_api'
+	User 'edc_quota': apikey b30faa54acd475b9b0d96dd7d9bc54e59856cacc
+
+On each of the clients: (may share the apikey)
+
+	>>>python manage.py setupedcquota b30faa54acd475b9b0d96dd7d9bc54e59856cacc
+	User 'edc_quota' has been created
+	User 'edc_quota': added to group 'edc_quota_api'
+	User 'edc_quota': apikey b30faa54acd475b9b0d96dd7d9bc54e59856cacc
+
 Overriding a Quota
 ------------------
 
@@ -201,3 +220,4 @@ Validate the pair of codes
     >>> from edc_quota import Override
     >>> if Override('3UFY9', 'NC4GT').is_valid_combination:
     >>>>    print('the codes are a valid pair')
+ 
