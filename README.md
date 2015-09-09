@@ -42,7 +42,7 @@ Copy the `change_form.html` in the templates folder of `edc_quota` to your templ
         /admin
             /bcpp_subject
                 /pimavl
-                    change_form.html`
+                    change_form.html
 
 The template extends the `admin/change_form.html` to adds a link to the Override ModelForm just above the Save button. See the [django docs](https://docs.djangoproject.com/en/1.8/ref/contrib/admin/#templates-which-may-be-overridden-per-app-or-model "templates-which-may-be-overridden-per-app-or-model") for more information on how to extend admin templates.
 
@@ -129,7 +129,7 @@ The controller registers all clients associated with the `ControllerQuota`. The 
         controller.get_all()
         controller.post_all()
 
-Recall with `edc_quota.client` a `quota` refers to a target count expected for a particular model. Unlike a `Quota` on the clients, `ControllerQuota` on the controller does NOT refer to any models on the controller. `ControllerQuota` on the controller is a reference model of quotas that the controller manages for its clients. There is one quota instance on the controller per client quota managed.
+`ControllerQuota` on the controller is a reference model of quotas that the controller manages for its clients. There is one quota instance on the controller per client quota managed. Note that in `edc_quota.client` a `Quota` refers to a target count expected for a particular model. The `ControllerQuota` on the controller does NOT refer to any models on the controller. 
 
 A new instance is added to model `edc_quota.controller.quota_history` for each client quota updated by the controller.
  
