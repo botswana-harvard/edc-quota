@@ -1,4 +1,9 @@
-from django.apps import apps
+try:
+    from django.apps import apps
+    models = apps.get_app_config('edc_quota').get_models()
+except ImportError:
+    from django.db.models import get_models, get_app
+    models = get_models(get_app('edc_quota'))
 from django.test import TestCase
 from django.contrib.auth.models import Group
 from tastypie.models import ApiKey
@@ -18,7 +23,7 @@ class TestSetup(TestCase):
     def test_has_permissions(self):
         configure = Configure()
         configure.user.user_permissions.filter()
-        for model in apps.get_app_config('edc_quota').get_models():
+        for model in models:
             self.assertEqual(
                 [p.codename for p in configure.group.permissions.filter(
                  content_type__app_label='edc_quota',
