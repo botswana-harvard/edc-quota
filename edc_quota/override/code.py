@@ -2,17 +2,20 @@ from getresults_identifier import ShortIdentifier
 
 from .exceptions import CodeError
 
-ShortIdentifier.prefix_pattern = ''
+
+class OverrideCode(ShortIdentifier):
+
+    prefix_pattern = ''
 
 
 class Code(object):
 
-    allowed_chars = ShortIdentifier.allowed_chars
+    allowed_chars = OverrideCode.allowed_chars
 
     def __init__(self, code=None):
         if code:
             code = str(code)
-        self.plain_code = code or ShortIdentifier().identifier
+        self.plain_code = code or OverrideCode(options={'prefix': ''}).identifier
 
     def __repr__(self):
         return '{}({})'.format(self.__class__.__name__, self.plain_code)
