@@ -14,15 +14,15 @@ Including another URLconf
     2. Add a URL to urlpatterns:  url(r'^blog/', include(blog_urls))
 """
 from django.contrib import admin
-from django.conf.urls import include
+from django.conf.urls import include, url
 from tastypie.api import Api
-from edc_tracker.api import TrackerResource
+from edc_quota.client.api import QuotaResource
 
-
-tracker_resource_api = Api(api_name='v1')
-tracker_resource_api.register(TrackerResource())
+api = Api(api_name='v1')
+api.register(QuotaResource())
+admin.autodiscover()
 
 urlpatterns = [
-    (r'^admin/', include(admin.site.urls)),
-    (r'^api/', include(tracker_resource_api.urls))
+    url(r'^admin/', include(admin.site.urls)),
+    url(r'^api/', include(api.urls)),
 ]

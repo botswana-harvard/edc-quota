@@ -14,6 +14,10 @@ https://docs.djangoproject.com/en/1.8/ref/settings/
 import os
 from unipath import Path
 
+import django
+
+django_version = django.get_version()
+
 # BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BASE_DIR = Path(os.path.dirname(os.path.realpath(__file__)))
 
@@ -38,52 +42,52 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'edc_tracker',
     'tastypie',
+    'getresults_identifier',
+    'edc_quota',
 )
 
-# MIDDLEWARE_CLASSES = (
-#     'django.contrib.sessions.middleware.SessionMiddleware',
-#     'django.middleware.common.CommonMiddleware',
-#     'django.middleware.csrf.CsrfViewMiddleware',
-#     'django.contrib.auth.middleware.AuthenticationMiddleware',
-#     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
-#     'django.contrib.messages.middleware.MessageMiddleware',
-#     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-#     'django.middleware.security.SecurityMiddleware',
-# )
-
-
-MIDDLEWARE_CLASSES = (
+MIDDLEWARE_CLASSES = [
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-)
+    'django.middleware.security.SecurityMiddleware',
+]
 
+if django_version.startswith('1.6'):
+    MIDDLEWARE_CLASSES.remove('django.middleware.security.SecurityMiddleware')
+    MIDDLEWARE_CLASSES.remove('django.contrib.auth.middleware.SessionAuthenticationMiddleware')
+else:
+    MIDDLEWARE_CLASSES.remove('django.middleware.security.SecurityMiddleware')
 
-ROOT_URLCONF = 'edc_tracker.urls'
+MIDDLEWARE_CLASSES = tuple(MIDDLEWARE_CLASSES)
+
+ROOT_URLCONF = 'edc_quota.urls'
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates'), ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
+                'django.template.context_processors.debug',
+                'django.template.context_processors.i18n',
+                'django.template.context_processors.media',
+                'django.template.context_processors.static',
+                'django.template.context_processors.tz',
                 'django.contrib.messages.context_processors.messages',
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = 'edc_tracker.wsgi.application'
+WSGI_APPLICATION = 'edc_quota.wsgi.application'
 
 
 # Database
@@ -92,12 +96,8 @@ WSGI_APPLICATION = 'edc_tracker.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'default',
-        'USER': 'root',
-        'PASSWORD': 'password',
-        'HOST': '',
-        'PORT': '',
-        'ATOMIC_REQUESTS': True}
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    }
 }
 
 
@@ -118,7 +118,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 GIT_DIR = BASE_DIR.ancestor(1)
-
-TRACKER_SERVER_NAME = 'coulson'

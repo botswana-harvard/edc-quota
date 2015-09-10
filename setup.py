@@ -10,23 +10,18 @@ with open(os.path.join(os.path.dirname(__file__), 'README.md')) as readme:
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
-    name='edc-tracker',
+    name='edc-quota',
     version='0.1.0dev0',
-    author=u'Coulson Thabo Kgathi',
-    author_email='ew2789@gmail.com',
+    author=u'erikvw',
+    author_email='ew2789@@gmail.com',
     packages=find_packages(),
     include_package_data=True,
-    url='http://github/botswana-harvard/edc-tracker',
+    url='http://github/botswana-harvard/edc-quota',
     license='GPL license, see LICENSE',
     description='track values for enrollment cap, etc',
     long_description=README,
     zip_safe=False,
-    keywords='django edc track enrollment',
-    install_requires=[
-        'Django>=1.6',
-        'django-extensions>=1.5.5',
-        'unipath>=1.1',
-    ],
+    keywords='django edc enrollment quota',
     classifiers=[
         'Environment :: Web Environment',
         'Framework :: Django',
@@ -34,7 +29,7 @@ setup(
         'License :: OSI Approved :: GNU General Public License (GPL)',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.4',
         'Topic :: Internet :: WWW/HTTP',
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
     ],
