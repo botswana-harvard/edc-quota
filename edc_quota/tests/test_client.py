@@ -12,7 +12,7 @@ from tastypie.utils import make_naive
 from tastypie.models import ApiKey
 
 from edc_quota.client.models import QuotaMixin, Quota, QuotaManager
-from edc_quota.client.exceptions import QuotaReachedError
+from edc_quota.client.exceptions import QuotaReachedError, QuotaDateConfigurationError
 
 
 tz = pytz.timezone(settings.TIME_ZONE)
@@ -161,18 +161,40 @@ class TestQuota(TestCase):
 
     def test_decrease_quota(self):
         """Asserts quota is reached and then can be changed down."""
-        TestQuotaModel.objects.set_quota(2, date.today())
+        TestQuotaModel.objects.set_quota(2, date.today(), start_date=(date.today() - timedelta(days=1)))
         TestQuotaModel.objects.create()
         TestQuotaModel.objects.create()
         self.assertRaises(QuotaReachedError, TestQuotaModel.objects.create)
-        TestQuotaModel.objects.set_quota(1, date.today())
+        TestQuotaModel.objects.set_quota(1, date.today(), start_date=(date.today() - timedelta(days=1)))
         self.assertRaises(QuotaReachedError, TestQuotaModel.objects.create)
         self.assertEqual(TestQuotaModel.objects.get_quota().target, 1)
 
     def test_expired_quota(self):
         """Asserts quota is reached if expired."""
-        TestQuotaModel.objects.set_quota(2, date.today() - timedelta(days=2))
+        TestQuotaModel.objects.set_quota(2, date.today() - timedelta(days=2),
+                                         start_date=(date.today() - timedelta(days=3)))
         self.assertRaises(QuotaReachedError, TestQuotaModel.objects.create)
+
+    def test_quota_start_date_similar_to_expires_date(self):
+        """Asserts exception raised if quota start date similar to expires date."""
+        TestQuotaModel.objects.set_quota(1, date.today() + timedelta(days=2),
+                                         start_date=(date.today() + timedelta(days=2)))
+        self.assertRaises(QuotaDateConfigurationError, TestQuotaModel.objects.create)
+
+    def test_quota_start_date_after_expires_date(self):
+        """Asserts exception raised if quota start date is before expires date."""
+        TestQuotaModel.objects.set_quota(1, date.today() + timedelta(days=2),
+                                         start_date=(date.today() + timedelta(days=3)))
+        self.assertRaises(QuotaDateConfigurationError, TestQuotaModel.objects.create)
+
+    def test_quota_start_before_expires_date(self):
+        """Asserts no exception if start date before expires date."""
+        TestQuotaModel.objects.set_quota(1, date.today() + timedelta(days=2),
+                                         start_date=(date.today() + timedelta(days=1)))
+        try:
+            TestQuotaModel.objects.create()
+        except QuotaDateConfigurationError:
+            self.fail("TestQuotaModel.objects.create() raised QuotaDateConfigurationError!")
 
     def test_large_quota(self):
         TestQuotaModel.objects.set_quota(100, date.today() + timedelta(days=1))
