@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 from django.test import TestCase
 
 from edc_quota.override import SimpleOverride, Override, Code
@@ -89,7 +89,7 @@ class TestOverride(TestCase):
         self.assertFalse(override.is_valid_combination)
 
     def test_override_in_model(self):
-        TestQuotaModel.quota.set_quota(2, date.today())
+        TestQuotaModel.quota.set_quota(2, date.today(), start_date=(date.today() - timedelta(days=1)))
         TestQuotaModel.objects.create()
         TestQuotaModel.objects.create()
         self.assertRaises(QuotaReachedError, TestQuotaModel.objects.create)
@@ -99,47 +99,3 @@ class TestOverride(TestCase):
         code = Code(test_quota_model.request_code)
         test_quota_model.override(code.validation_code)
         test_quota_model.save()
-
-#     def test_override_quota(self):
-#         quota = Quota.objects.create(
-#             app_label='edc_quota',
-#             model_name='TestQuotaModel',
-#             target=2,
-#             expiration_date=date.today() + timedelta(days=1)
-#         )
-#         TestQuotaModel.objects.create()
-#         TestQuotaModel.objects.create()
-#         self.assertRaises(QuotaReachedError, TestQuotaModel.objects.create)
-#         override = Override()
-#         request_code = override.request_code
-#         override = Override(request_code=request_code)
-#         override_code = override.override_code
-#         self.assertIsInstance(TestQuotaOverrideModel.objects.create(
-#             request_code=code,
-#             override_code=override_code,
-#             quota=quota), QuotaOverride)
-#
-#     def test_override_used(self):
-#         """Assert fail on reusing the same code pair"""
-#         quota = Quota.objects.create(
-#             app_label='edc_quota',
-#             model_name='TestQuotaOverrideModel',
-#             target=1,
-#             expiration_date=date.today() + timedelta(days=1)
-#         )
-#         TestQuotaOverrideModel.objects.create(quota=quota)
-#         override = Override()
-#         request_code = override.code
-#         override = Override(request_code)
-#         override_code = override.override_code
-#         test_quota = TestQuotaOverrideModel.objects.create(
-#             quota=quota,
-#             request_code=request_code,
-#             override_code=override_code,
-#         )
-#         with self.assertRaises(OverrideError):
-#             TestQuotaOverrideModel.objects.create(
-#                 request_code=test_quota.request_code,
-#                 override_code=test_quota.override_code,
-#                 quota=quota,
-#             )

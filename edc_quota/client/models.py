@@ -16,9 +16,10 @@ from django.dispatch import receiver
 from ..override.models import OverrideModel
 from ..override.override import Override
 
-from .exceptions import QuotaReachedError
+from .exceptions import QuotaReachedError, QuotaDateConfigurationError
 
-QuotaTuple = namedtuple('QuotaTuple', 'target model_count expiration_date pk target_reached expired quota_reached')
+QuotaTuple = namedtuple('QuotaTuple', 'target model_count expiration_date start_date pk target_reached expired \
+    quota_reached correct_date_cofiguration')
 
 
 class Quota(models.Model):
@@ -35,6 +36,8 @@ class Quota(models.Model):
     model_count = models.IntegerField(default=0)
 
     target = models.IntegerField()
+
+    start_date = models.DateField(default=timezone.now)
 
     expiration_date = models.DateField()
 
@@ -53,11 +56,18 @@ class QuotaManager(models.Manager):
 
     """A manager for a model that uses the QuotaMixin."""
 
-    def set_quota(self, target, expiration_date):
+    def set_quota(self, target, expiration_date, start_date=None):
         app_label = self.model._meta.app_label
         model_name = self.model._meta.object_name
         model_count = get_model(app_label, model_name).objects.all().count()
         Quota.objects.create(
+            app_label=app_label,
+            model_name=model_name,
+            model_count=model_count,
+            target=target,
+            start_date=start_date,
+            expiration_date=expiration_date
+        ) if start_date else Quota.objects.create(
             app_label=app_label,
             model_name=model_name,
             model_count=model_count,
@@ -72,14 +82,15 @@ class QuotaManager(models.Manager):
         ).order_by('quota_datetime').last()
         try:
             target_reached = True if (quota.target <= quota.model_count) else False
+            correct_date_cofiguration = True if quota.start_date < quota.expiration_date else False
             expired = True if date.today() > quota.expiration_date else False
             quota_reached = True if (target_reached or expired) else False
             return QuotaTuple(
-                quota.target, quota.model_count, quota.expiration_date,
-                quota.pk, target_reached, expired, quota_reached
+                quota.target, quota.model_count, quota.expiration_date, quota.start_date,
+                quota.pk, target_reached, expired, quota_reached, correct_date_cofiguration
             )
         except AttributeError:
-            return QuotaTuple(None, None, None, None, None, None, None)
+            return QuotaTuple(None, None, None, None, None, None, None, None)
 
     @property
     def quota_reached(self):
@@ -87,6 +98,13 @@ class QuotaManager(models.Manager):
         if quota.target_reached:
             return True
         elif quota.expired:
+            return True
+        return False
+
+    @property
+    def correct_date_cofiguration(self):
+        quota = self.get_quota()
+        if quota.correct_date_cofiguration:
             return True
         return False
 
@@ -106,6 +124,11 @@ class QuotaMixin(models.Model):
             quota = self.__class__.quota.get_quota()
             if quota.pk:
                 self.quota_pk = quota.pk
+                if not quota.correct_date_cofiguration:
+                    raise QuotaDateConfigurationError(
+                        'Quota start and expires dates for model {} have been configured incorrectly.'
+                        'Got start="{}", expires="{}".'.
+                        format(self.__class__.__name__, quota.start_date, quota.expiration_date))
                 if quota.quota_reached:
                     try:
                         OverrideModel.objects.get(
