@@ -24,7 +24,9 @@ class TestQuotaModel(QuotaMixin, models.Model):
 
     field2 = models.CharField(max_length=10)
 
-    objects = QuotaManager()
+    quota = QuotaManager()
+
+    objects = models.Manager()
 
     def save(self, *args, **kwargs):
         self.field2 = 'erik'
@@ -60,25 +62,25 @@ class TestQuota(TestCase):
 
     def test_quota_create_with_manager(self):
         expiration_date = date.today() + timedelta(days=1)
-        TestQuotaModel.objects.set_quota(10, expiration_date)
-        TestQuotaModel.objects.set_quota(5, expiration_date + timedelta(days=1))
+        TestQuotaModel.quota.set_quota(10, expiration_date)
+        TestQuotaModel.quota.set_quota(5, expiration_date + timedelta(days=1))
         last_quota = Quota.objects.filter(
             app_label='edc_quota',
             model_name='TestQuotaModel').order_by('quota_datetime').last()
-        self.assertEqual(TestQuotaModel.objects.get_quota()[0:3],
+        self.assertEqual(TestQuotaModel.quota.get_quota()[0:3],
                          (last_quota.target, last_quota.model_count, last_quota.expiration_date))
-        self.assertEqual(TestQuotaModel.objects.get_quota()[0:3],
+        self.assertEqual(TestQuotaModel.quota.get_quota()[0:3],
                          (5, 0, expiration_date + timedelta(days=1)))
 
     def test_quota_pk(self):
         """Assert test model picks the correct quota_pk on created and updated."""
-        TestQuotaModel.objects.set_quota(2, date.today() + timedelta(days=1))
+        TestQuotaModel.quota.set_quota(2, date.today() + timedelta(days=1))
         test_model = TestQuotaModel()
         test_model.save()
-        pk1 = TestQuotaModel.objects.get_quota().pk
+        pk1 = TestQuotaModel.quota.get_quota().pk
         self.assertEqual(test_model.quota_pk, pk1)
-        TestQuotaModel.objects.set_quota(2, date.today() + timedelta(days=1))
-        pk2 = TestQuotaModel.objects.get_quota().pk
+        TestQuotaModel.quota.set_quota(2, date.today() + timedelta(days=1))
+        pk2 = TestQuotaModel.quota.get_quota().pk
         self.assertNotEqual(pk1, pk2)
         test_model.save()
         self.assertEqual(test_model.quota_pk, pk1)
@@ -88,98 +90,98 @@ class TestQuota(TestCase):
 
     def test_quota_model_count_with_save(self):
         """Asserts model_count is incremented on save / created."""
-        TestQuotaModel.objects.set_quota(2, date.today() + timedelta(days=1))
-        quota = TestQuotaModel.objects.get_quota()
+        TestQuotaModel.quota.set_quota(2, date.today() + timedelta(days=1))
+        quota = TestQuotaModel.quota.get_quota()
         self.assertEqual(quota.model_count, 0)
         test_model = TestQuotaModel()
         test_model.save()
-        quota = TestQuotaModel.objects.get_quota()
+        quota = TestQuotaModel.quota.get_quota()
         self.assertEqual(quota.model_count, 1)
         test_model.save()
-        quota = TestQuotaModel.objects.get_quota()
+        quota = TestQuotaModel.quota.get_quota()
         self.assertEqual(quota.model_count, 1)
         test_model = TestQuotaModel()
         test_model.save()
-        quota = TestQuotaModel.objects.get_quota()
+        quota = TestQuotaModel.quota.get_quota()
         self.assertEqual(quota.model_count, 2)
 
     def test_quota_model_count_with_create(self):
         """Asserts model_count is incremented on save / created."""
-        TestQuotaModel.objects.set_quota(2, date.today() + timedelta(days=1))
-        quota = TestQuotaModel.objects.get_quota()
+        TestQuotaModel.quota.set_quota(2, date.today() + timedelta(days=1))
+        quota = TestQuotaModel.quota.get_quota()
         self.assertEqual(quota.model_count, 0)
         test_model = TestQuotaModel.objects.create()
-        quota = TestQuotaModel.objects.get_quota()
+        quota = TestQuotaModel.quota.get_quota()
         self.assertEqual(quota.model_count, 1)
         test_model.save()
-        quota = TestQuotaModel.objects.get_quota()
+        quota = TestQuotaModel.quota.get_quota()
         self.assertEqual(quota.model_count, 1)
         test_model = TestQuotaModel.objects.create()
-        quota = TestQuotaModel.objects.get_quota()
+        quota = TestQuotaModel.quota.get_quota()
         self.assertEqual(quota.model_count, 2)
 
     def test_quota_reached(self):
         """Asserts mixin save method works with model save."""
-        TestQuotaModel.objects.set_quota(2, date.today() + timedelta(days=1))
+        TestQuotaModel.quota.set_quota(2, date.today() + timedelta(days=1))
         test_model = TestQuotaModel()
         test_model.save()
         self.assertTrue(test_model.field2, 'erik')
-        quota = TestQuotaModel.objects.get_quota()
+        quota = TestQuotaModel.quota.get_quota()
         self.assertEqual(quota.model_count, 1)
         test_model = TestQuotaModel()
         test_model.save()
-        quota = TestQuotaModel.objects.get_quota()
+        quota = TestQuotaModel.quota.get_quota()
         self.assertEqual(quota.model_count, 2)
         self.assertRaises(QuotaReachedError, TestQuotaModel.objects.create)
         self.assertEqual(TestQuotaModel.objects.all().count(), 2)
-        self.assertEqual(TestQuotaModel.objects.quota_reached, True)
+        self.assertEqual(TestQuotaModel.quota.quota_reached, True)
 
     def test_quota_reached_manager_method(self):
         """Asserts mixin save method works with model save."""
         today = date.today()
         for m in range(0, 10):
-            TestQuotaModel.objects.set_quota(m + 1, date.today() + timedelta(days=m))
+            TestQuotaModel.quota.set_quota(m + 1, date.today() + timedelta(days=m))
         for m in range(0, 5):
             test_model = TestQuotaModel()
             test_model.save()
-        self.assertEqual(TestQuotaModel.objects.quota_reached, False)
+        self.assertEqual(TestQuotaModel.quota.quota_reached, False)
         for m in range(0, 5):
             test_model = TestQuotaModel()
             test_model.save()
-        self.assertEqual(TestQuotaModel.objects.get_quota()[0:3], (10, 10, today + timedelta(days=9)))
-        self.assertEqual(TestQuotaModel.objects.quota_reached, True)
+        self.assertEqual(TestQuotaModel.quota.get_quota()[0:3], (10, 10, today + timedelta(days=9)))
+        self.assertEqual(TestQuotaModel.quota.quota_reached, True)
 
     def test_increase_quota(self):
         """Asserts quota is reached and then can be changed up."""
-        TestQuotaModel.objects.set_quota(2, date.today() + timedelta(days=1))
+        TestQuotaModel.quota.set_quota(2, date.today() + timedelta(days=1))
         TestQuotaModel.objects.create()
         TestQuotaModel.objects.create()
         self.assertRaises(QuotaReachedError, TestQuotaModel.objects.create)
-        TestQuotaModel.objects.set_quota(3, date.today() + timedelta(days=1))
+        TestQuotaModel.quota.set_quota(3, date.today() + timedelta(days=1))
         self.assertIsInstance(TestQuotaModel.objects.create(), TestQuotaModel)
         self.assertRaises(QuotaReachedError, TestQuotaModel.objects.create)
 
     def test_decrease_quota(self):
         """Asserts quota is reached and then can be changed down."""
-        TestQuotaModel.objects.set_quota(2, date.today())
+        TestQuotaModel.quota.set_quota(2, date.today())
         TestQuotaModel.objects.create()
         TestQuotaModel.objects.create()
         self.assertRaises(QuotaReachedError, TestQuotaModel.objects.create)
-        TestQuotaModel.objects.set_quota(1, date.today())
+        TestQuotaModel.quota.set_quota(1, date.today())
         self.assertRaises(QuotaReachedError, TestQuotaModel.objects.create)
-        self.assertEqual(TestQuotaModel.objects.get_quota().target, 1)
+        self.assertEqual(TestQuotaModel.quota.get_quota().target, 1)
 
     def test_expired_quota(self):
         """Asserts quota is reached if expired."""
-        TestQuotaModel.objects.set_quota(2, date.today() - timedelta(days=2))
+        TestQuotaModel.quota.set_quota(2, date.today() - timedelta(days=2))
         self.assertRaises(QuotaReachedError, TestQuotaModel.objects.create)
 
     def test_large_quota(self):
-        TestQuotaModel.objects.set_quota(100, date.today() + timedelta(days=1))
+        TestQuotaModel.quota.set_quota(100, date.today() + timedelta(days=1))
         for _ in range(0, 100):
             TestQuotaModel.objects.create()
         self.assertRaises(QuotaReachedError, TestQuotaModel.objects.create)
-        model_count = TestQuotaModel.objects.get_quota().model_count
+        model_count = TestQuotaModel.quota.get_quota().model_count
         self.assertEqual(model_count, 100)
 
 
@@ -192,7 +194,7 @@ class QuotaResourceTest(ResourceTestCase):
         self.password = 'pass'
         self.user = User.objects.create_user(self.username, 'erik@example.com', self.password)
         self.api_key = ApiKey.objects.get_or_create(user=self.user)[0].key
-        TestQuotaModel.objects.set_quota(100, date.today() + timedelta(days=1))
+        TestQuotaModel.quota.set_quota(100, date.today() + timedelta(days=1))
 
         self.quota = Quota.objects.last()
 

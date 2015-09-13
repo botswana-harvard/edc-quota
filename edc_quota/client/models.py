@@ -103,7 +103,7 @@ class QuotaMixin(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.id:
-            quota = self.__class__.objects.get_quota()
+            quota = self.__class__.quota.get_quota()
             if quota.pk:
                 self.quota_pk = quota.pk
                 if quota.quota_reached:

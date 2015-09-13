@@ -58,7 +58,7 @@ Declare your model with the `QuotaMixin` and the `QuotaManager`:
 
 		field2 = models.CharField(max_length=25)
 
-		objects = QuotaManager()
+		quota = QuotaManager()
 		
 		class Meta:
 			app_label = 'my_app'
@@ -67,7 +67,7 @@ Set a quota:
 	
 	from datetime import date, timedelta
 	
-	MyModel.objects.set_quota(100, date.today() + timedelta(days=1))
+	MyModel.quota.set_quota(100, date.today() + timedelta(days=1))
 
 Use your model:
 
@@ -76,7 +76,7 @@ Use your model:
 
 Check progress toward the quota:
 
-	>>> quota = MyModel.objects.get_quota()
+	>>> quota = MyModel.quota.get_quota()
 	>>> quota.target
 	100
 	>>> quota.model_count
@@ -92,7 +92,7 @@ Once the target is reached, your Model will raise an exception before more than 
 	>>> 	MyModel.objects.create()
 	>>> MyModel.objects.all().count()
 	100
-	>>> MyModel.objects.quota_reached
+	>>> MyModel.quota.quota_reached
 	True
 	>>> MyModel.objects.create()
 	QuotaReachedError: Quota for model MyModel has been reached.
@@ -100,16 +100,16 @@ Once the target is reached, your Model will raise an exception before more than 
 
 ## Manager methods
 
-##### `Model.objects.set_quota(target, expiration_date)`
+##### `Model.quota.set_quota(target, expiration_date)`
 Sets a quota. If model instances already exist, the model_count attribute will be updated with the count. 
 	
-##### `Model.objects.get_quota()`
+##### `Model.quota.get_quota()`
 Returns a namedtuple with attributes `target, model_count, expiration_date, pk, reached, expired`.
 
-##### `Model.objects.quota_reached`
+##### `Model.quota.quota_reached`
 Returns True if the target has been met or the quota is expired (property).
 
-##### `Model.objects.quota_expired`
+##### `Model.quota.quota_expired`
 Returns True if the quota is expired (property).
 
 
