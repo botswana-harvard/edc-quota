@@ -58,7 +58,7 @@ class QuotaManager(models.Manager):
     def set_quota(self, target, start_date, expiration_date):
         app_label = self.model._meta.app_label
         model_name = self.model._meta.object_name
-        model_count = self.self.model.objects.all().count()
+        model_count = self.model.objects.all().count()
         if start_date > expiration_date:
             raise ValidationError(
                 'Quota start date \'{}\' must be less than or equal to the expiration date \'{}\'.'.format(
