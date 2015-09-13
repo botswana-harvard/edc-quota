@@ -1,7 +1,7 @@
 from datetime import date
 from collections import namedtuple
 from django.db import models
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
 try:
     from django.apps import apps
 except ImportError:
@@ -63,6 +63,10 @@ class QuotaManager(models.Manager):
             raise ValidationError(
                 'Quota start date \'{}\' must be less than or equal to the expiration date \'{}\'.'.format(
                     start_date, expiration_date))
+        if model_count > target:
+            raise QuotaReachedError(
+                'Quota cannot be set. A quota of {} has already been met. Got model_count={}.'.format(
+                    target, model_count))
         Quota.objects.create(
             app_label=app_label,
             model_name=model_name,
@@ -76,6 +80,7 @@ class QuotaManager(models.Manager):
         quota = Quota.objects.filter(
             app_label=self.model._meta.app_label,
             model_name=self.model._meta.object_name,
+            start_date__lte=date.today(),
         ).order_by('quota_datetime').last()
         try:
             target_reached = True if (quota.target <= quota.model_count) else False
@@ -138,5 +143,5 @@ def quota_on_post_save(sender, instance, raw, created, using, **kwargs):
                 quota = Quota.objects.get(pk=instance.quota_pk)
                 quota.model_count += 1
                 quota.save()
-            except AttributeError:
+            except (AttributeError, ObjectDoesNotExist):
                 pass

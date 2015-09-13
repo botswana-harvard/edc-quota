@@ -67,7 +67,7 @@ Set a quota:
 	
 	from datetime import date, timedelta
 	
-	MyModel.quota.set_quota(100, date.today() + timedelta(days=1))
+	MyModel.quota.set_quota(100, date.today(), date.today() + timedelta(days=1))
 
 Use your model:
 
@@ -100,11 +100,11 @@ Once the target is reached, your Model will raise an exception before more than 
 
 ## Manager methods
 
-##### `Model.quota.set_quota(target, expiration_date)`
+##### `Model.quota.set_quota(target, start_date, expiration_date)`
 Sets a quota. If model instances already exist, the model_count attribute will be updated with the count. 
 	
 ##### `Model.quota.get_quota()`
-Returns a namedtuple with attributes `target, model_count, expiration_date, pk, reached, expired`.
+Returns a namedtuple with attributes `target, model_count, start_date, expiration_date, pk, reached, expired`.
 
 ##### `Model.quota.quota_reached`
 Returns True if the target has been met or the quota is expired (property).
@@ -165,7 +165,7 @@ Once the quota has been reached, a user may bypass the quota one instance at a t
 
 Set a quota:
 
-    >>> TestQuotaModel.objects.set_quota(2, date.today())
+    >>> TestQuotaModel.objects.set_quota(2, date.today(), date.today())
 
 Reach the quota:
 

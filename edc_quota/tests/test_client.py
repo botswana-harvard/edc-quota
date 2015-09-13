@@ -178,14 +178,25 @@ class TestClient(TestCase):
         self.assertRaises(QuotaReachedError, TestQuotaModel.objects.create)
 
     def test_decrease_quota(self):
-        """Asserts quota is reached and then can be changed down."""
+        """Asserts quota is reached and then cannot be changed down if target already met."""
         TestQuotaModel.quota.set_quota(2, date.today() - timedelta(days=1), date.today())
         TestQuotaModel.objects.create()
         TestQuotaModel.objects.create()
         self.assertRaises(QuotaReachedError, TestQuotaModel.objects.create)
+        self.assertRaises(
+            QuotaReachedError, TestQuotaModel.quota.set_quota, 1, date.today() - timedelta(days=1), date.today())
+        self.assertRaises(QuotaReachedError, TestQuotaModel.objects.create)
+        self.assertEqual(TestQuotaModel.quota.get_quota().target, 2)
+        self.assertEqual(TestQuotaModel.quota.get_quota().model_count, 2)
+
+    def test_decrease_quota2(self):
+        """Asserts quota is reached and then cannot be changed down if target already met."""
+        TestQuotaModel.quota.set_quota(2, date.today() - timedelta(days=1), date.today())
+        TestQuotaModel.objects.create()
         TestQuotaModel.quota.set_quota(1, date.today() - timedelta(days=1), date.today())
         self.assertRaises(QuotaReachedError, TestQuotaModel.objects.create)
         self.assertEqual(TestQuotaModel.quota.get_quota().target, 1)
+        self.assertEqual(TestQuotaModel.quota.get_quota().model_count, 1)
 
     def test_expired_quota(self):
         """Asserts quota is reached if expired."""
@@ -213,6 +224,17 @@ class TestClient(TestCase):
         self.assertRaises(QuotaReachedError, TestQuotaModel.objects.create)
         model_count = TestQuotaModel.quota.get_quota().model_count
         self.assertEqual(model_count, 100)
+
+    def test_quota_ignored_if_not_started(self):
+        TestQuotaModel.quota.set_quota(10, date.today() + timedelta(days=2), date.today() + timedelta(days=2))
+        for _ in range(0, 10):
+            TestQuotaModel.objects.create()
+        TestQuotaModel.objects.create()
+        self.assertFalse(TestQuotaModel.quota.get_quota().model_count)
+        TestQuotaModel.quota.set_quota(12, date.today(), date.today() + timedelta(days=2))
+        self.assertEqual(TestQuotaModel.quota.get_quota().model_count, 11)
+        TestQuotaModel.objects.create()
+        self.assertRaises(QuotaReachedError, TestQuotaModel.objects.create)
 
 
 class QuotaResourceTest(ResourceTestCase):
