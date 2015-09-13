@@ -73,7 +73,7 @@ class QuotaManager(models.Manager):
             model_count=model_count,
             target=target,
             start_date=start_date,
-            expiration_date=expiration_date
+            expiration_date=expiration_date,
         )
 
     def get_quota(self):
@@ -108,6 +108,8 @@ class QuotaManager(models.Manager):
 
 class QuotaMixin(models.Model):
 
+    QUOTA_REACHED_MESSAGE = 'Quota for model {} has been reached or exceeded. Got {} >= {}.'
+
     quota_pk = models.CharField(max_length=36, null=True)
 
     request_code = models.CharField(max_length=10, null=True, editable=False)
@@ -123,7 +125,7 @@ class QuotaMixin(models.Model):
                             request_code=self.request_code, instance_pk__isnull=True)
                     except OverrideModel.DoesNotExist:
                         raise QuotaReachedError(
-                            'Quota for model {} has been reached or exceeded. Got {} >= {}.'.format(
+                            self.QUOTA_REACHED_MESSAGE.format(
                                 self.__class__.__name__, quota.model_count, quota.target))
         super(QuotaMixin, self).save(*args, **kwargs)
 
