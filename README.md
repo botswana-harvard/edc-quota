@@ -195,30 +195,3 @@ Apply override code and save the model instance:
 ### Overriding a Quota in Admin
 
 For a model with a quota, the ModelForm redirects to an interim form that shows the user a request code and presents a form to accept an override code. If a valid override code is entered the interim form will submit and the model is saved. If the user does not have a valid override code, they can cancel and be returned to the model form or some other page, such as a dashboard.
-
-### SimpleOverride 
-
-SimpleOverride does not include any models and is the base class for `Override`.
-
-Get an request code:
-
-    >>> from edc_quota import Override
-    >>> override = Override()
-    >>> request_code = override.request_code
-    >>> print(request_code)
-    '3UFY9'
-
-Ask for a confirmation code
-
-    >>> from edc_quota import Override
-    >>> override = Override(request_code='3UFY9')
-    >>> override_code = override.override_code
-    >>> print(override_code)
-    'NC4GT'
-
-Validate the pair of codes
-
-    >>> from edc_quota import Override
-    >>> if Override('3UFY9', 'NC4GT').is_valid_combination:
-    >>>>    print('the codes are a valid pair')
- 
