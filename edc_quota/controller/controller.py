@@ -24,6 +24,7 @@ class Controller(object):
                 self.quota = ControllerQuota.objects.get(
                     pk=quota.pk,
                     is_active=True,
+                    start_date__lte=date.today(),
                     expiration_date__gte=date.today())
             self.quota_history = ControllerQuotaHistory.objects.create(
                 quota=self.quota,
@@ -108,6 +109,7 @@ class Controller(object):
         remainder = allocation % client_count if allocation > 0 else 0
         for name in self.quota_history.clients_contacted_list:
             self.clients.get(name).target, remainder = self.target(allocation, client_count, remainder)
+            self.clients.get(name).start_date = self.quota_history.start_date
             self.clients.get(name).expiration_date = self.quota_history.expiration_date
             self.clients.get(name).save()
 
@@ -126,6 +128,7 @@ class Controller(object):
             app_label=self.clients.get(name).app_label,
             model_name=self.clients.get(name).model_name,
             target=self.clients.get(name).target,
+            start_date=self.clients.get(name).start_date,
             expiration_date=self.clients.get(name).expiration_date
         )
         requests.post(self.clients.get(name).post_url, data=data, auth=self.auth)

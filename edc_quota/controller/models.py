@@ -16,6 +16,8 @@ class ControllerQuota(models.Model):
 
     target = models.IntegerField()
 
+    start_date = models.DateField()
+
     expiration_date = models.DateField()
 
     duration = models.IntegerField(
@@ -51,6 +53,10 @@ class ControllerQuotaHistory(models.Model):
 
     clients_contacted = models.CharField(
         max_length=500,
+        editable=False,
+        null=True)
+
+    start_date = models.DateField(
         editable=False,
         null=True)
 
@@ -102,6 +108,10 @@ class Client(models.Model):
     model_count = models.IntegerField(
         editable=False,
         default=0)
+
+    start_date = models.DateField(
+        editable=False,
+        null=True)
 
     expiration_date = models.DateField(
         editable=False,

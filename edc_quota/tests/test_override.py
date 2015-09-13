@@ -89,7 +89,7 @@ class TestOverride(TestCase):
         self.assertFalse(override.is_valid_combination)
 
     def test_override_in_model(self):
-        TestQuotaModel.quota.set_quota(2, date.today(), start_date=(date.today() - timedelta(days=1)))
+        TestQuotaModel.quota.set_quota(2, date.today() - timedelta(days=1), date.today())
         TestQuotaModel.objects.create()
         TestQuotaModel.objects.create()
         self.assertRaises(QuotaReachedError, TestQuotaModel.objects.create)
