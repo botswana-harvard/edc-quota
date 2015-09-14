@@ -50,7 +50,7 @@ class Configure:
                     target=model_cls.QUOTA_TARGET,
                     start_date=model_cls.START_DATE,
                     expiration_date=model_cls.EXPIRATION_DATE)
-        except AttributeError:
+        except (AttributeError, TypeError):
             pass
 
     def create_quotas(self):
