@@ -46,6 +46,7 @@ Copy the `change_form.html` in the templates folder of `edc_quota` to your templ
 
 The template extends the `admin/change_form.html` to adds a link to the Override ModelForm just above the Save button. See the [django docs](https://docs.djangoproject.com/en/1.8/ref/contrib/admin/#templates-which-may-be-overridden-per-app-or-model "templates-which-may-be-overridden-per-app-or-model") for more information on how to extend admin templates.
 
+
 ## Usage
 
 Declare your model with the `QuotaMixin` and the `QuotaManager`:
@@ -67,7 +68,7 @@ Set a quota:
 	
 	from datetime import date, timedelta
 	
-	MyModel.quota.set_quota(100, date.today() + timedelta(days=1))
+	MyModel.quota.set_quota(100, date.today(), date.today() + timedelta(days=1))
 
 Use your model:
 
@@ -96,15 +97,19 @@ Once the target is reached, your Model will raise an exception before more than 
 	True
 	>>> MyModel.objects.create()
 	QuotaReachedError: Quota for model MyModel has been reached.
-	
+
+If the quota has not started or is expired you will get a `QuotaNotSetOrExpiredError`. For example, if the start date is tomorrow and you try to entry data into your model today, the exception is raised.
+
+A model class declared with the `QuotaMixin` cannot be added to unless a valid quota can be found using the manager method `get_quota()`.
+
 
 ## Manager methods
 
-##### `Model.quota.set_quota(target, expiration_date)`
+##### `Model.quota.set_quota(target, start_date, expiration_date)`
 Sets a quota. If model instances already exist, the model_count attribute will be updated with the count. 
 	
 ##### `Model.quota.get_quota()`
-Returns a namedtuple with attributes `target, model_count, expiration_date, pk, reached, expired`.
+Returns a namedtuple with attributes `target, model_count, start_date, expiration_date, pk, reached, expired`.
 
 ##### `Model.quota.quota_reached`
 Returns True if the target has been met or the quota is expired (property).
@@ -165,7 +170,7 @@ Once the quota has been reached, a user may bypass the quota one instance at a t
 
 Set a quota:
 
-    >>> TestQuotaModel.objects.set_quota(2, date.today())
+    >>> TestQuotaModel.objects.set_quota(2, date.today(), date.today())
 
 Reach the quota:
 
@@ -196,29 +201,25 @@ Apply override code and save the model instance:
 
 For a model with a quota, the ModelForm redirects to an interim form that shows the user a request code and presents a form to accept an override code. If a valid override code is entered the interim form will submit and the model is saved. If the user does not have a valid override code, they can cancel and be returned to the model form or some other page, such as a dashboard.
 
-### SimpleOverride 
 
-SimpleOverride does not include any models and is the base class for `Override`.
+### Specifying quota information on the Model
 
-Get an request code:
+You can specify the target, start date and expiration date on the model class. If these attributes exist, the management command `setupedcquota` will create the initial quota automatically.
 
-    >>> from edc_quota import Override
-    >>> override = Override()
-    >>> request_code = override.request_code
-    >>> print(request_code)
-    '3UFY9'
+For example:
 
-Ask for a confirmation code
+	class TestQuotaModel(QuotaMixin, models.Model):
 
-    >>> from edc_quota import Override
-    >>> override = Override(request_code='3UFY9')
-    >>> override_code = override.override_code
-    >>> print(override_code)
-    'NC4GT'
+    QUOTA_TARGET = 10
+    START_DATE = timezone.now()
+    EXPIRATION_DATE = timezone.now() + timedelta(days=365)
 
-Validate the pair of codes
+    field1 = models.CharField(max_length=10)
 
-    >>> from edc_quota import Override
-    >>> if Override('3UFY9', 'NC4GT').is_valid_combination:
-    >>>>    print('the codes are a valid pair')
- 
+    quota = QuotaManager()
+
+    objects = models.Manager()
+
+    class Meta:
+        app_label = 'edc_quota'
+	

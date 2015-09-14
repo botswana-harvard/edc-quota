@@ -5,11 +5,7 @@ from datetime import date, timedelta
 from django.conf import settings
 from django.db import models
 from django.test import TestCase
-from django.contrib.auth.models import User
-from tastypie.test import ResourceTestCase
-from tastypie.utils import make_naive
-from tastypie.models import ApiKey
-from edc_quota.client.models import QuotaMixin, Quota as ClientQuota
+from edc_quota.client.models import QuotaMixin
 from edc_quota.controller.models import Client, ControllerQuotaHistory, ControllerQuota
 from edc_quota.controller.controller import Controller
 from collections import defaultdict
@@ -45,6 +41,7 @@ class TestController(TestCase):
             app_label='edc_quota',
             model_name='TestQuotaModel2',
             target=3,
+            start_date=date.today(),
             expiration_date=date.today() + timedelta(days=1)
         )
 
@@ -109,6 +106,7 @@ class TestController(TestCase):
             app_label='edc_quota',
             model_name='TestQuotaModel2',
             target=3,
+            start_date=date.today() - timedelta(days=2),
             expiration_date=date.today() - timedelta(days=1)
         )
         with self.assertRaises(ControllerQuota.DoesNotExist):
@@ -160,61 +158,3 @@ class TestController(TestCase):
         allocation = controller.quota.target - controller.quota_history.model_count
         sum([client.target for client in controller.clients.values()])
         self.assertEqual(sum([client.target for client in controller.clients.values()]), allocation)
-
-
-class TestResource(ResourceTestCase):
-
-    def setUp(self):
-        super(TestResource, self).setUp()
-
-        self.username = 'erik'
-        self.password = 'pass'
-        self.user = User.objects.create_user(self.username, 'erik@example.com', self.password)
-        self.api_client_key = ApiKey.objects.get_or_create(user=self.user)[0].key
-        self.quota = ControllerQuota.objects.create(
-            app_label='edc_quota',
-            model_name='TestQuotaModel2',
-            target=3,
-            expiration_date=date.today() + timedelta(days=1)
-        )
-
-        Client.objects.create(
-            hostname='erik',
-            app_label='edc_quota',
-            model_name='TestQuotaModel2',
-            is_active=True)
-
-    def get_credentials(self):
-        return self.create_apikey(username=self.username, api_key=self.api_client_key)
-
-    def test_api_post_list(self):
-        """Asserts api can be used to create a new Quota instance on the client."""
-
-        self.assertEqual(ClientQuota.objects.count(), 0)
-
-        resource_data = {
-            'app_label': 'edc_quota',
-            'model_name': 'Quota',
-            'target': 30,
-            'expiration_date': date.today()
-        }
-        self.assertHttpCreated(
-            self.api_client.post(
-                '/api/v1/quota/',
-                format='json',
-                data=resource_data,
-                authentication=self.get_credentials()
-            )
-        )
-        self.assertEqual(ClientQuota.objects.count(), 1)
-
-    def test_controller_quota_not_active_or_expired_raises(self):
-        self.quota.is_active = False
-        self.quota.save()
-        with self.assertRaises(ControllerQuota.DoesNotExist):
-            Controller(self.quota)
-        self.quota.is_active = True
-        self.quota.expiration_date = date.today() - timedelta(days=1)
-        self.quota.save()
-        with self.assertRaises(ControllerQuota.DoesNotExist):
-            Controller(self.quota)

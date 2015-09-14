@@ -1,12 +1,13 @@
+from datetime import date, timedelta
 import time
 
 from selenium import webdriver
-# from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.test import LiveServerTestCase
 from selenium.webdriver.common.keys import Keys
 from django.contrib.auth.models import User
 
 from ..override.code import Code
+from .test_client import TestQuotaModel
 
 
 class TestFunctionalOverride(LiveServerTestCase):
@@ -17,6 +18,7 @@ class TestFunctionalOverride(LiveServerTestCase):
 
     def setUp(self):
         User.objects.create_superuser(self.username, self.email, self.password)
+        TestQuotaModel.quota.set_quota(1, date.today(), date.today() + timedelta(days=10))
         self.browser = webdriver.Firefox()
         self.browser.set_window_size(1400, 1000)
         self.browser.get(self.live_server_url + '/admin/')
