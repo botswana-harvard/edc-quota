@@ -62,9 +62,9 @@ class TestSetup(TestCase):
         self.assertEqual(controller.apikey, client2.apikey)
         self.assertEqual(controller.apikey, client3.apikey)
 
-    def test_create_quotas_if_possible(self):
+    def test_create_client_quotas_if_possible(self):
         controller = Configure()
-        controller.create_initial_quota(TestQuotaModel3)
+        controller.create_initial_client_quota(TestQuotaModel3)
         quota = TestQuotaModel3.quota.get_quota()
         self.assertIsNotNone(quota)
         self.assertEqual(quota.target, 10)

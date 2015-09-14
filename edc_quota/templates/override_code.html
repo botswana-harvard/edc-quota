@@ -1,0 +1,10 @@
+<form action="#" method="post">
+<div>
+    <label for="override_request">Override Request:</label>
+    <input id="override_request" type="text" name="override_request" value="{{ override_request }}">
+    <input type="submit" value="Create Override Code">
+	<label for="override_code">{% if override_code %}Your override code is {{override_code}}{%endif%}</label>
+     {% csrf_token %}
+  </div>
+     
+</form>
