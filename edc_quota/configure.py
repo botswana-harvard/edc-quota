@@ -33,7 +33,7 @@ class Configure:
             apikey = ApiKey.objects.get(user=self.user)
             apikey.key = self.shared_apikey
             apikey.save()
-        self.quotas_created = self.create_quotas()
+        self.quotas_created = self.create_client_quotas()
 
     @property
     def apikey(self):
@@ -42,8 +42,8 @@ class Configure:
         except ApiKey.DoesNotExist:
             return None
 
-    def create_initial_quota(self, model_cls):
-        """Attempts to create an initial quota if the model has set the attributes
+    def create_initial_client_quota(self, model_cls):
+        """Attempts to create an initial client quota if the model has set the attributes
         QUOTA_TARGET, START_DATE, EXPIRATION_DATE."""
         try:
             if not model_cls.quota.get_quota():
@@ -54,25 +54,25 @@ class Configure:
         except (AttributeError, TypeError):
             pass
 
-    def create_quotas(self):
+    def create_client_quotas(self):
         try:
             from django.apps import apps
-            quotas = self.create_quotas_18(apps)
+            quotas = self.create_client_quotas_18(apps)
         except ImportError:
             from django.db import models
-            quotas = self.create_quotas_16(models)
+            quotas = self.create_client_quotas_16(models)
         return quotas
 
-    def create_quotas_16(self, models):
+    def create_client_quotas_16(self, models):
         quotas = []
         for app in models.get_apps():
             for model_cls in models.get_models(app):
-                quotas.append(self.create_initial_quota(model_cls))
+                quotas.append(self.create_initial_client_quota(model_cls))
         return quotas
 
-    def create_quotas_18(self, apps):
+    def create_client_quotas_18(self, apps):
         quotas = []
         for app_config in apps.get_app_configs():
             for model_cls in app_config.get_models():
-                quotas.append(self.create_initial_quota(model_cls))
+                quotas.append(self.create_initial_client_quota(model_cls))
         return quotas
