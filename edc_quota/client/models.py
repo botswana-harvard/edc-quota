@@ -63,7 +63,7 @@ class QuotaManager(models.Manager):
             raise ValidationError(
                 'Quota start date \'{}\' must be less than or equal to the expiration date \'{}\'.'.format(
                     start_date, expiration_date))
-        if model_count > target:
+        if model_count > target or 0:
             raise QuotaReachedError(
                 'Quota cannot be set. A quota of {} has already been met. Got model_count={}.'.format(
                     target, model_count))
