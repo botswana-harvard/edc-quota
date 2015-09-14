@@ -14,7 +14,7 @@ from edc_quota.configure import Configure
 from edc_quota import QuotaMixin, QuotaManager
 
 
-class TestQuotaModel2(QuotaMixin, models.Model):
+class TestQuotaModel3(QuotaMixin, models.Model):
 
     QUOTA_TARGET = 10
     START_DATE = timezone.now()
@@ -64,7 +64,7 @@ class TestSetup(TestCase):
 
     def test_create_quotas_if_possible(self):
         controller = Configure()
-        controller.create_initial_quota(TestQuotaModel2)
-        quota = TestQuotaModel2.quota.get_quota()
+        controller.create_initial_quota(TestQuotaModel3)
+        quota = TestQuotaModel3.quota.get_quota()
         self.assertIsNotNone(quota)
         self.assertEqual(quota.target, 10)

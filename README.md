@@ -203,7 +203,7 @@ You can specify the target, start date and expiration date on the model class. I
 
 For example:
 
-	class TestQuotaModel2(QuotaMixin, models.Model):
+	class TestQuotaModel(QuotaMixin, models.Model):
 
     QUOTA_TARGET = 10
     START_DATE = timezone.now()
