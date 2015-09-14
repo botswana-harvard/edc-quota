@@ -1,10 +1,10 @@
 from django.contrib import admin
+from django.core.urlresolvers import resolve
+from django.core.urlresolvers import reverse
+from django.http import HttpResponseRedirect
 
 from .code import Code
 from .models import OverrideModel
-from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect
-from django.core.urlresolvers import resolve
 
 
 class OverrideAdmin(admin.ModelAdmin):

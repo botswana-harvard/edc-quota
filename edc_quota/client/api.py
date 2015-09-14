@@ -1,8 +1,8 @@
 from tastypie.resources import ModelResource
 from tastypie.authentication import ApiKeyAuthentication
+from tastypie.authorization import Authorization
 
 from .models import Quota
-from tastypie.authorization import Authorization
 
 
 class QuotaResource(ModelResource):

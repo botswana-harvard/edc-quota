@@ -1,25 +1,18 @@
-from datetime import date
 from collections import namedtuple
-from django.db import models, IntegrityError, transaction
+from datetime import date
+
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.core.validators import MinValueValidator
-from edc_quota.client.exceptions import QuotaNotSetOrExpiredError
-try:
-    from django.apps import apps
-except ImportError:
-    pass
-try:
-    get_model = apps.get_model
-except NameError:
-    get_model = models.get_model
-from django.utils import timezone
+from django.db import models, IntegrityError, transaction
+
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.utils import timezone
 
 from ..override.models import OverrideModel
 from ..override.override import Override
 
-from .exceptions import QuotaReachedError
+from .exceptions import QuotaReachedError, QuotaNotSetOrExpiredError
 
 QuotaTuple = namedtuple(
     'QuotaTuple', 'target model_count start_date expiration_date pk target_reached')
