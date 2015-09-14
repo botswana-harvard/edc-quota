@@ -45,9 +45,9 @@ INSTALLED_APPS = (
     'tastypie',
     'getresults_identifier',
     'edc_quota',
-    'edc_quota.client',
-    'edc_quota.controller',
-    'edc_quota.override',
+#     'edc_quota.client',
+#     'edc_quota.controller',
+#     'edc_quota.override',
 )
 
 MIDDLEWARE_CLASSES = [
