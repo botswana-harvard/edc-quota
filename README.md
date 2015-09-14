@@ -195,3 +195,26 @@ Apply override code and save the model instance:
 ### Overriding a Quota in Admin
 
 For a model with a quota, the ModelForm redirects to an interim form that shows the user a request code and presents a form to accept an override code. If a valid override code is entered the interim form will submit and the model is saved. If the user does not have a valid override code, they can cancel and be returned to the model form or some other page, such as a dashboard.
+
+
+### Specifying quota information on the Model
+
+You can specify the target, start date and expiration date on the model class. If these attributes exist, the management command `setupedcquota` will create the initial quota automatically.
+
+For example:
+
+	class TestQuotaModel2(QuotaMixin, models.Model):
+
+    QUOTA_TARGET = 10
+    START_DATE = timezone.now()
+    EXPIRATION_DATE = timezone.now() + timedelta(days=365)
+
+    field1 = models.CharField(max_length=10)
+
+    quota = QuotaManager()
+
+    objects = models.Manager()
+
+    class Meta:
+        app_label = 'edc_quota'
+	
