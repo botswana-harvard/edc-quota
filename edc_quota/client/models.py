@@ -1,6 +1,6 @@
 from datetime import date
 from collections import namedtuple
-from django.db import models
+from django.db import models, IntegrityError, transaction
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.core.validators import MinValueValidator
 from edc_quota.client.exceptions import QuotaNotSetOrExpiredError
@@ -59,6 +59,7 @@ class QuotaManager(models.Manager):
     """A manager for a model that uses the QuotaMixin."""
 
     def set_quota(self, target, start_date, expiration_date):
+        target = target or 0
         app_label = self.model._meta.app_label
         model_name = self.model._meta.object_name
         model_count = self.model.objects.all().count()
@@ -79,14 +80,18 @@ class QuotaManager(models.Manager):
                 expiration_date=expiration_date,
             )
         except Quota.DoesNotExist:
-            Quota.objects.create(
-                app_label=app_label,
-                model_name=model_name,
-                model_count=model_count,
-                target=target,
-                start_date=start_date,
-                expiration_date=expiration_date,
-            )
+            with transaction.atomic():
+                try:
+                    Quota.objects.create(
+                        app_label=app_label,
+                        model_name=model_name,
+                        model_count=model_count,
+                        target=target,
+                        start_date=start_date,
+                        expiration_date=expiration_date,
+                    )
+                except IntegrityError:
+                    pass
 
     def get_quota(self, report_datetime=None):
         """Returns a quota if it exists for the current period."""

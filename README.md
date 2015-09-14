@@ -46,6 +46,7 @@ Copy the `change_form.html` in the templates folder of `edc_quota` to your templ
 
 The template extends the `admin/change_form.html` to adds a link to the Override ModelForm just above the Save button. See the [django docs](https://docs.djangoproject.com/en/1.8/ref/contrib/admin/#templates-which-may-be-overridden-per-app-or-model "templates-which-may-be-overridden-per-app-or-model") for more information on how to extend admin templates.
 
+
 ## Usage
 
 Declare your model with the `QuotaMixin` and the `QuotaManager`:
@@ -96,7 +97,11 @@ Once the target is reached, your Model will raise an exception before more than 
 	True
 	>>> MyModel.objects.create()
 	QuotaReachedError: Quota for model MyModel has been reached.
-	
+
+If the quota has not started or is expired you will get a `QuotaNotSetOrExpiredError`. For example, if the start date is tomorrow and you try to entry data into your model today, the exception is raised.
+
+A model class declared with the `QuotaMixin` cannot be added to unless a valid quota can be found using the manager method `get_quota()`.
+
 
 ## Manager methods
 
