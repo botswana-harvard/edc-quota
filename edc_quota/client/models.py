@@ -37,7 +37,7 @@ class Quota(models.Model):
     model_count = models.IntegerField(default=0)
 
     target = models.IntegerField(
-        validators=MinValueValidator(1))
+        validators=[MinValueValidator(1)])
 
     start_date = models.DateField()
 
