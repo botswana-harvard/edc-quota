@@ -10,7 +10,7 @@ class Controller(object):
     """A class to control or manage quotas between a group of offline clients.
 
     For example:
-        quota = Quota.objects.get(...)
+        quota = ControllerQuota.objects.get(...)
         controller = Controller(quota)
         controller.get_all()
         controller.post_all()

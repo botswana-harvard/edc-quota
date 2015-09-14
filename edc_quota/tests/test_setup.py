@@ -11,7 +11,7 @@ from django.test import TestCase
 from django.contrib.auth.models import Group
 from tastypie.models import ApiKey
 from edc_quota.configure import Configure
-from edc_quota import QuotaMixin, QuotaManager
+from edc_quota.client.models import QuotaMixin, QuotaManager
 
 
 class TestQuotaModel3(QuotaMixin, models.Model):

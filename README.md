@@ -109,13 +109,10 @@ A model class declared with the `QuotaMixin` cannot be added to unless a valid q
 Sets a quota. If model instances already exist, the model_count attribute will be updated with the count. 
 	
 ##### `Model.quota.get_quota()`
-Returns a namedtuple with attributes `target, model_count, start_date, expiration_date, pk, reached, expired`.
+Returns a namedtuple with attributes `target, model_count, start_date, expiration_date, pk, reached, expired` or None.
 
 ##### `Model.quota.quota_reached`
 Returns True if the target has been met or the quota is expired (property).
-
-##### `Model.quota.quota_expired`
-Returns True if the quota is expired (property).
 
 
 ## Use with the Controller
@@ -210,16 +207,16 @@ For example:
 
 	class TestQuotaModel(QuotaMixin, models.Model):
 
-    QUOTA_TARGET = 10
-    START_DATE = timezone.now()
-    EXPIRATION_DATE = timezone.now() + timedelta(days=365)
-
-    field1 = models.CharField(max_length=10)
-
-    quota = QuotaManager()
-
-    objects = models.Manager()
-
-    class Meta:
-        app_label = 'edc_quota'
+	    QUOTA_TARGET = 10
+    	START_DATE = timezone.now()
+    	EXPIRATION_DATE = timezone.now() + timedelta(days=365)
+	
+    	field1 = models.CharField(max_length=10)
+	
+    	quota = QuotaManager()
+	
+    	objects = models.Manager()
+	
+    	class Meta:
+        	app_label = 'edc_quota'
 	
