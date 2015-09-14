@@ -1,5 +1,6 @@
 import pytz
 
+from django.utils import timezone
 from datetime import date, timedelta
 
 from django.conf import settings
@@ -12,7 +13,7 @@ from tastypie.utils import make_naive
 from tastypie.models import ApiKey
 
 from edc_quota.client.models import QuotaMixin, Quota, QuotaManager
-from edc_quota.client.exceptions import QuotaReachedError
+from edc_quota.client.exceptions import QuotaReachedError, QuotaNotSetOrExpiredError
 from django.core.exceptions import ValidationError
 
 
@@ -20,6 +21,8 @@ tz = pytz.timezone(settings.TIME_ZONE)
 
 
 class TestQuotaModel(QuotaMixin, models.Model):
+
+    report_datetime = models.DateTimeField(default=timezone.now())
 
     field1 = models.CharField(max_length=10)
 
@@ -201,21 +204,18 @@ class TestClient(TestCase):
     def test_expired_quota(self):
         """Asserts quota is reached if expired."""
         TestQuotaModel.quota.set_quota(2, date.today() - timedelta(days=3), date.today() - timedelta(days=2))
-        self.assertRaises(QuotaReachedError, TestQuotaModel.objects.create)
+        self.assertRaises(QuotaNotSetOrExpiredError, TestQuotaModel.objects.create)
 
-    def test_quota_start_date_after_expires_date(self):
-        """Asserts exception raised if quota start date is before expires date."""
+    def test_quota_start_date_after_expiration_date(self):
+        """Asserts exception raised if quota start date is before expiration date."""
         self.assertRaises(
             ValidationError,
             TestQuotaModel.quota.set_quota, 1, date.today() + timedelta(days=3), date.today() + timedelta(days=2))
 
-    def test_quota_start_before_expires_date(self):
-        """Asserts no exception if start date before expires date."""
+    def test_quota_start_before_expiration_date(self):
+        """Asserts no exception if start date before expiration date."""
         TestQuotaModel.quota.set_quota(1, date.today() + timedelta(days=1), date.today() + timedelta(days=2))
-        try:
-            TestQuotaModel.objects.create()
-        except ValidationError:
-            self.fail("TestQuotaModel.objects.create() raised ValidationError unexpectedly")
+        self.assertRaises(QuotaNotSetOrExpiredError, TestQuotaModel.objects.create)
 
     def test_large_quota(self):
         TestQuotaModel.quota.set_quota(100, date.today(), date.today() + timedelta(days=1))
@@ -225,16 +225,22 @@ class TestClient(TestCase):
         model_count = TestQuotaModel.quota.get_quota().model_count
         self.assertEqual(model_count, 100)
 
-    def test_quota_ignored_if_not_started(self):
+    def test_no_entry_if_quota_not_started(self):
+        """Asserts that a model using Quota cannot be added to unless a valid quota is available."""
+        self.assertRaises(QuotaNotSetOrExpiredError, TestQuotaModel.objects.create)
         TestQuotaModel.quota.set_quota(10, date.today() + timedelta(days=2), date.today() + timedelta(days=2))
-        for _ in range(0, 10):
-            TestQuotaModel.objects.create()
-        TestQuotaModel.objects.create()
+        self.assertRaises(QuotaNotSetOrExpiredError, TestQuotaModel.objects.create)
         self.assertIsNone(TestQuotaModel.quota.get_quota())
         TestQuotaModel.quota.set_quota(12, date.today(), date.today() + timedelta(days=2))
-        self.assertEqual(TestQuotaModel.quota.get_quota().model_count, 11)
-        TestQuotaModel.objects.create()
+        for _ in range(0, 12):
+            TestQuotaModel.objects.create()
         self.assertRaises(QuotaReachedError, TestQuotaModel.objects.create)
+
+    def test_zero_target_dumb_but_ok(self):
+        TestQuotaModel.quota.set_quota(0, date.today() - timedelta(days=2), date.today() + timedelta(days=2))
+        self.assertIsNotNone(TestQuotaModel.quota.get_quota())
+        TestQuotaModel.quota.set_quota(20, date.today() - timedelta(days=2), date.today() + timedelta(days=2))
+        self.assertIsNotNone(TestQuotaModel.quota.get_quota())
 
 
 class QuotaResourceTest(ResourceTestCase):

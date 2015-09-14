@@ -2,6 +2,8 @@ from datetime import date
 from collections import namedtuple
 from django.db import models
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
+from django.core.validators import MinValueValidator
+from edc_quota.client.exceptions import QuotaNotSetOrExpiredError
 try:
     from django.apps import apps
 except ImportError:
@@ -20,7 +22,7 @@ from ..override.override import Override
 from .exceptions import QuotaReachedError
 
 QuotaTuple = namedtuple(
-    'QuotaTuple', 'target model_count start_date expiration_date pk target_reached expired quota_reached')
+    'QuotaTuple', 'target model_count start_date expiration_date pk target_reached')
 
 
 class Quota(models.Model):
@@ -34,7 +36,8 @@ class Quota(models.Model):
 
     model_count = models.IntegerField(default=0)
 
-    target = models.IntegerField()
+    target = models.IntegerField(
+        validators=MinValueValidator(1))
 
     start_date = models.DateField()
 
@@ -63,10 +66,10 @@ class QuotaManager(models.Manager):
             raise ValidationError(
                 'Quota start date \'{}\' must be less than or equal to the expiration date \'{}\'.'.format(
                     start_date, expiration_date))
-        if model_count > target or 0:
+        if model_count > target:
             raise QuotaReachedError(
                 'Quota cannot be set. A quota of {} has already been met. Got model_count={}.'.format(
-                    target, model_count))
+                    target or 0, model_count))
         Quota.objects.create(
             app_label=app_label,
             model_name=model_name,
@@ -76,35 +79,34 @@ class QuotaManager(models.Manager):
             expiration_date=expiration_date,
         )
 
-    def get_quota(self):
-        """Always returns a namedtuple."""
+    def get_quota(self, report_datetime=None):
+        """Returns a quota if it exists for the current period."""
+        if report_datetime:
+            report_date = report_datetime.date()
+        else:
+            report_date = date.today()
         quota = Quota.objects.filter(
             app_label=self.model._meta.app_label,
             model_name=self.model._meta.object_name,
-            start_date__lte=date.today(),
+            start_date__lte=report_date,
+            expiration_date__gte=report_date
         ).order_by('quota_datetime').last()
         try:
             target_reached = True if (quota.target <= quota.model_count) else False
-            expired = True if date.today() > quota.expiration_date else False
-            quota_reached = True if (target_reached or expired) else False
             return QuotaTuple(
                 quota.target, quota.model_count, quota.start_date, quota.expiration_date,
-                quota.pk, target_reached, expired, quota_reached)
+                quota.pk, target_reached)
         except AttributeError:
             return None
 
     @property
     def quota_reached(self):
-        quota = self.get_quota()
-        if quota.target_reached:
-            return True
-        elif quota.expired:
-            return True
+        try:
+            if self.get_quota().target_reached:
+                return True
+        except AttributeError:
+            pass
         return False
-
-    @property
-    def quota_expired(self):
-        return self.get_quota().expired
 
 
 class QuotaMixin(models.Model):
@@ -112,6 +114,7 @@ class QuotaMixin(models.Model):
     QUOTA_TARGET = None
     START_DATE = None
     EXPIRATION_DATE = None
+    REPORT_DATETIME_ATTR = 'report_datetime'
     QUOTA_REACHED_MESSAGE = 'Quota for model {} has been reached or exceeded. Got {} >= {}.'
 
     quota_pk = models.CharField(max_length=36, null=True)
@@ -121,10 +124,16 @@ class QuotaMixin(models.Model):
     def save(self, *args, **kwargs):
         if not self.id:
             quota = self.__class__.quota.get_quota()
+            if not quota:
+                raise QuotaNotSetOrExpiredError(
+                    'Expected a valid quota for model \'{}\' using {} \'{}\'. Got None.'.format(
+                        self.__class__._meta.verbose_name,
+                        self.REPORT_DATETIME_ATTR,
+                        getattr(self, self.REPORT_DATETIME_ATTR).strftime('%Y-%m-%d')))
             try:
                 if quota.pk:
                     self.quota_pk = quota.pk
-                    if quota.quota_reached:
+                    if quota.target_reached:
                         try:
                             OverrideModel.objects.get(
                                 request_code=self.request_code, instance_pk__isnull=True)
