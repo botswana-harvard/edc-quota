@@ -77,6 +77,7 @@ class QuotaManager(models.Manager):
         )
 
     def get_quota(self):
+        """Always returns a namedtuple."""
         quota = Quota.objects.filter(
             app_label=self.model._meta.app_label,
             model_name=self.model._meta.object_name,
@@ -90,7 +91,7 @@ class QuotaManager(models.Manager):
                 quota.target, quota.model_count, quota.start_date, quota.expiration_date,
                 quota.pk, target_reached, expired, quota_reached)
         except AttributeError:
-            return QuotaTuple(None, None, None, None, None, None, None, None)
+            return None
 
     @property
     def quota_reached(self):
@@ -108,6 +109,9 @@ class QuotaManager(models.Manager):
 
 class QuotaMixin(models.Model):
 
+    QUOTA_TARGET = None
+    START_DATE = None
+    EXPIRATION_DATE = None
     QUOTA_REACHED_MESSAGE = 'Quota for model {} has been reached or exceeded. Got {} >= {}.'
 
     quota_pk = models.CharField(max_length=36, null=True)
@@ -117,16 +121,19 @@ class QuotaMixin(models.Model):
     def save(self, *args, **kwargs):
         if not self.id:
             quota = self.__class__.quota.get_quota()
-            if quota.pk:
-                self.quota_pk = quota.pk
-                if quota.quota_reached:
-                    try:
-                        OverrideModel.objects.get(
-                            request_code=self.request_code, instance_pk__isnull=True)
-                    except OverrideModel.DoesNotExist:
-                        raise QuotaReachedError(
-                            self.QUOTA_REACHED_MESSAGE.format(
-                                self.__class__.__name__, quota.model_count, quota.target))
+            try:
+                if quota.pk:
+                    self.quota_pk = quota.pk
+                    if quota.quota_reached:
+                        try:
+                            OverrideModel.objects.get(
+                                request_code=self.request_code, instance_pk__isnull=True)
+                        except OverrideModel.DoesNotExist:
+                            raise QuotaReachedError(
+                                self.QUOTA_REACHED_MESSAGE.format(
+                                    self.__class__.__name__, quota.model_count, quota.target))
+            except AttributeError:
+                pass
         super(QuotaMixin, self).save(*args, **kwargs)
 
     def override(self, override_code):

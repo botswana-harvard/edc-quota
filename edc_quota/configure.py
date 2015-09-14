@@ -1,4 +1,5 @@
 import os
+from django.apps import apps
 from django.contrib.auth.models import make_password, Group, Permission, User
 from tastypie.models import ApiKey
 
@@ -31,6 +32,7 @@ class Configure:
             apikey = ApiKey.objects.get(user=self.user)
             apikey.key = self.shared_apikey
             apikey.save()
+        self.quotas_created = self.create_quotas()
 
     @property
     def apikey(self):
@@ -38,3 +40,22 @@ class Configure:
             return ApiKey.objects.get(user=self.user).key
         except ApiKey.DoesNotExist:
             return None
+
+    def create_initial_quota(self, model_cls):
+        """Attempts to create an initial quota if the model has set the attributes
+        QUOTA_TARGET, START_DATE, EXPIRATION_DATE."""
+        try:
+            if not model_cls.quota.get_quota():
+                model_cls.quota.set_quota(
+                    target=model_cls.QUOTA_TARGET,
+                    start_date=model_cls.START_DATE,
+                    expiration_date=model_cls.EXPIRATION_DATE)
+        except AttributeError:
+            pass
+
+    def create_quotas(self):
+        quotas = []
+        for app_config in apps.get_app_configs():
+            for model_cls in app_config.get_models():
+                self.create_initial_quota(model_cls)
+        return quotas

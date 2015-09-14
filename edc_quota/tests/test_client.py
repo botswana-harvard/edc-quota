@@ -230,7 +230,7 @@ class TestClient(TestCase):
         for _ in range(0, 10):
             TestQuotaModel.objects.create()
         TestQuotaModel.objects.create()
-        self.assertFalse(TestQuotaModel.quota.get_quota().model_count)
+        self.assertIsNone(TestQuotaModel.quota.get_quota())
         TestQuotaModel.quota.set_quota(12, date.today(), date.today() + timedelta(days=2))
         self.assertEqual(TestQuotaModel.quota.get_quota().model_count, 11)
         TestQuotaModel.objects.create()
