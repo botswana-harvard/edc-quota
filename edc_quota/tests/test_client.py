@@ -91,16 +91,18 @@ class TestClient(TestCase):
         TestQuotaModel.quota.set_quota(2, date.today(), date.today() + timedelta(days=1))
         test_model = TestQuotaModel()
         test_model.save()
-        pk1 = TestQuotaModel.quota.get_quota().pk
-        self.assertEqual(test_model.quota_pk, pk1)
-        TestQuotaModel.quota.set_quota(2, date.today(), date.today() + timedelta(days=1))
-        pk2 = TestQuotaModel.quota.get_quota().pk
-        self.assertNotEqual(pk1, pk2)
+        quota1 = TestQuotaModel.quota.get_quota()
+        self.assertEqual(test_model.quota_pk, quota1.pk)
+        TestQuotaModel.quota.set_quota(3, date.today(), date.today() + timedelta(days=1))
+        quota2 = TestQuotaModel.quota.get_quota()
+        self.assertNotEqual(quota1.pk, quota2.pk)
+        self.assertEqual(quota1.target, 2)
+        self.assertEqual(quota2.target, 3)
         test_model.save()
-        self.assertEqual(test_model.quota_pk, pk1)
+        self.assertEqual(test_model.quota_pk, quota1.pk)
         test_model = TestQuotaModel()
         test_model.save()
-        self.assertEqual(test_model.quota_pk, pk2)
+        self.assertEqual(test_model.quota_pk, quota2.pk)
 
     def test_quota_model_count_with_save(self):
         """Asserts model_count is incremented on save / created."""

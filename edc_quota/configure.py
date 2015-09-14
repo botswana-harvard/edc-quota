@@ -1,6 +1,7 @@
 import os
-from django.apps import apps
+
 from django.contrib.auth.models import make_password, Group, Permission, User
+
 from tastypie.models import ApiKey
 
 
@@ -54,8 +55,24 @@ class Configure:
             pass
 
     def create_quotas(self):
+        try:
+            from django.apps import apps
+            quotas = self.create_quotas_18(apps)
+        except ImportError:
+            from django.db import models
+            quotas = self.create_quotas_16(models)
+        return quotas
+
+    def create_quotas_16(self, models):
+        quotas = []
+        for app in models.get_apps():
+            for model_cls in models.get_models(app):
+                quotas.append(self.create_initial_quota(model_cls))
+        return quotas
+
+    def create_quotas_18(self, apps):
         quotas = []
         for app_config in apps.get_app_configs():
             for model_cls in app_config.get_models():
-                self.create_initial_quota(model_cls)
+                quotas.append(self.create_initial_quota(model_cls))
         return quotas

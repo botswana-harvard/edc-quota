@@ -70,34 +70,43 @@ class QuotaManager(models.Manager):
             raise QuotaReachedError(
                 'Quota cannot be set. A quota of {} has already been met. Got model_count={}.'.format(
                     target or 0, model_count))
-        Quota.objects.create(
-            app_label=app_label,
-            model_name=model_name,
-            model_count=model_count,
-            target=target,
-            start_date=start_date,
-            expiration_date=expiration_date,
-        )
+        try:
+            Quota.objects.get(
+                app_label=app_label,
+                model_name=model_name,
+                target=target,
+                start_date=start_date,
+                expiration_date=expiration_date,
+            )
+        except Quota.DoesNotExist:
+            Quota.objects.create(
+                app_label=app_label,
+                model_name=model_name,
+                model_count=model_count,
+                target=target,
+                start_date=start_date,
+                expiration_date=expiration_date,
+            )
 
     def get_quota(self, report_datetime=None):
         """Returns a quota if it exists for the current period."""
         if report_datetime:
-            report_date = report_datetime.date()
+            report_date = report_datetime.date()  # timezone??
         else:
             report_date = date.today()
-        quota = Quota.objects.filter(
-            app_label=self.model._meta.app_label,
-            model_name=self.model._meta.object_name,
-            start_date__lte=report_date,
-            expiration_date__gte=report_date
-        ).order_by('quota_datetime').last()
         try:
+            quota = Quota.objects.filter(
+                app_label=self.model._meta.app_label,
+                model_name=self.model._meta.object_name,
+                start_date__lte=report_date,
+                expiration_date__gte=report_date).last()
             target_reached = True if (quota.target <= quota.model_count) else False
             return QuotaTuple(
                 quota.target, quota.model_count, quota.start_date, quota.expiration_date,
                 quota.pk, target_reached)
         except AttributeError:
-            return None
+            pass
+        return None
 
     @property
     def quota_reached(self):
