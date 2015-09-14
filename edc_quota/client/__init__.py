@@ -1,2 +1,2 @@
-from .admin import QuotaAdmin
+# from .admin import QuotaAdmin
 from .models import Quota, QuotaMixin, QuotaManager
