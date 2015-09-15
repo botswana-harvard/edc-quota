@@ -40,8 +40,21 @@ class Quota(models.Model):
 
     quota_datetime = models.DateTimeField(default=timezone.now)
 
+    def save(self, *args, **kwargs):
+        self.model_count = self.model_class().objects.all().count()
+        super(Quota, self).save(*args, **kwargs)
+
     def __str__(self):
         return "{}(target={})".format(self.model_name, self.target)
+
+    def model_class(self):
+        try:
+            from django.apps import apps
+            model_class = apps.get_model(self.app_label, self.model_name)
+        except ImportError:
+            from django.db.models import get_model
+            model_class = get_model(self.app_label, self.model_name)
+        return model_class
 
     class Meta:
         app_label = 'edc_quota'

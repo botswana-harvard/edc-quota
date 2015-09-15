@@ -6,6 +6,7 @@ from tastypie.models import ApiKey
 from edc_quota.client.models import Quota as ClientQuota
 from edc_quota.controller.models import Client, ControllerQuota
 from edc_quota.controller.controller import Controller
+from edc_quota.controller.exceptions import ControllerError
 
 
 class TestResource(ResourceTestCase):
@@ -59,12 +60,12 @@ class TestResource(ResourceTestCase):
     def test_controller_quota_not_active_or_expired_raises(self):
         self.quota.is_active = False
         self.quota.save()
-        with self.assertRaises(ControllerQuota.DoesNotExist):
+        with self.assertRaises(ControllerError):
             Controller(self.quota)
         self.quota.is_active = True
         self.quota.expiration_date = date.today() - timedelta(days=1)
         self.quota.save()
-        with self.assertRaises(ControllerQuota.DoesNotExist):
+        with self.assertRaises(ControllerError):
             Controller(self.quota)
 
     def test_post_url_format(self):

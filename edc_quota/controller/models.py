@@ -20,10 +20,6 @@ class ControllerQuota(models.Model):
 
     expiration_date = models.DateField()
 
-    duration = models.IntegerField(
-        null=True,
-        help_text='Default duration in days to set on the client.')
-
     max_allocation = models.IntegerField(
         blank=True,
         null=True)
@@ -77,10 +73,9 @@ class ControllerQuotaHistory(models.Model):
 
     @property
     def clients_contacted_list(self):
-        try:
+        clients_contacted = []
+        if self.clients_contacted:
             clients_contacted = self.clients_contacted.split(',')
-        except AttributeError:
-            clients_contacted = []
         return clients_contacted
 
     class Meta:
