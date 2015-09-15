@@ -66,3 +66,7 @@ class TestResource(ResourceTestCase):
         self.quota.save()
         with self.assertRaises(ControllerQuota.DoesNotExist):
             Controller(self.quota)
+
+    def test_post_url_format(self):
+        controller = Controller(self.quota, username='erik')
+        self.assertEqual(['api_key', 'username'], sorted(controller.auth.keys()))

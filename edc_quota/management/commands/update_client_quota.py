@@ -3,7 +3,8 @@ import sys
 from datetime import date
 from django.core.management.base import BaseCommand
 
-from edc_quota.controller import Controller, ControllerQuota
+from edc_quota.controller.controller import Controller
+from edc_quota.controller.models import ControllerQuota
 
 
 class Command(BaseCommand):
