@@ -3,7 +3,8 @@ import sys
 from datetime import date
 from django.core.management.base import BaseCommand
 
-from edc_quota.controller import Controller, ControllerQuota
+from edc_quota.controller.controller import Controller
+from edc_quota.controller.models import ControllerQuota
 
 
 class Command(BaseCommand):
@@ -27,7 +28,7 @@ class Command(BaseCommand):
             sys.stdout.write('Found {} controller quota.\n'.format(quotas.count()))
         for quota in quotas:
             sys.stdout.flush()
-            controller = Controller(quota, clients=self.clients)
+            controller = Controller(quota, clients=self.clients, username='edc_quota')
             sys.stdout.write('Updating {}\n'.format(quota))
             controller.get_all()
             controller.post_all()

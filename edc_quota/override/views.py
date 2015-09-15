@@ -1,25 +1,13 @@
-from django.views.generic import View
-from django.shortcuts import render
+from .forms import OverrideForm
+from django.views.generic.edit import FormView
+from django.shortcuts import render_to_response
 
-from .code import Code
 
+class OverrideCodeView(FormView):
 
-class OverrideCodeView(View):
+    template_name = 'override_code.html'
+    form_class = OverrideForm
+    success_url = '/override_code/'
 
-    def __init__(self):
-        self.template_name = 'override_code.html'
-
-    def get_context_data(self, request, **kwargs):
-        override_request = request.POST.get('override_request', '')
-        self.context = {'override_request': override_request}
-        if override_request:
-            self.context.update({'override_code': Code(override_request).validation_code})
-        return self.context
-
-    def post(self, request, *args, **kwargs):
-        """Allows a POST -- without the class returns a 405 error."""
-        return render(request, self.template_name, self.get_context_data(request, **kwargs))
-
-    def get(self, request, *args, **kwargs):
-        """Allows a GET -- without the class returns a 405 error."""
-        return render(request, self.template_name, {})
+    def form_valid(self, form):
+        return render_to_response(self.template_name, {'override_code': form.clean().get("override_request")})

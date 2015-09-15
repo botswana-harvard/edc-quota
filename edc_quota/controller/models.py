@@ -132,12 +132,12 @@ class Client(models.Model):
 
     @property
     def url(self):
-        return 'http://{}:{}/api/{}/?app_label={}&model_name={}&format=json'.format(
+        return 'http://{}:{}/edc_quota/api/{}/?app_label={}&model_name={}&format=json'.format(
             self.hostname, self.port, self.api_name, self.app_label, self.model_name)
 
     @property
     def post_url(self):
-        return 'http://{}:{}/api/{}/'.format(
+        return 'http://{}:{}/edc_quota/api/{}/{}/'.format(
             self.hostname, self.port, self.api_name, self.model_name.lower())
 
     @property

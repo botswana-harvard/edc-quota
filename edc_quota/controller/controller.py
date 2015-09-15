@@ -2,6 +2,8 @@ import requests
 
 from datetime import date, timedelta
 from django.utils import timezone
+from django.contrib.auth.models import User
+from tastypie.models import ApiKey
 
 from .models import Client, ControllerQuota, ControllerQuotaHistory
 
@@ -16,9 +18,16 @@ class Controller(object):
         controller.post_all()
 
     """
-    def __init__(self, quota, clients=None, auth=None):
+    def __init__(self, quota, clients=None, username=None):
         self.clients = {}
-        self.auth = auth
+        self.auth = {}
+        username = username or 'edc_quota'
+        try:
+            user = User.objects.get(username=username)
+            self.auth.update({'username': username})
+            self.auth.update({'api_key': ApiKey.objects.get(user=user).key})
+        except (User.DoesNotExist, ApiKey.DoesNotExist):
+            pass
         try:
             if quota:
                 self.quota = ControllerQuota.objects.get(
@@ -94,7 +103,8 @@ class Controller(object):
 
     def get_client_model_count(self, name):
         """Fetches one clients model_count over the REST api."""
-        request = requests.get(self.clients.get(name).url)
+        get_url = '{}&{}'.format(self.clients.get(name).url, self.get_credentials())
+        request = requests.get(get_url)
         objects = request.json()['objects']
         try:
             model_count = objects[0].get('model_count', None)
@@ -131,4 +141,11 @@ class Controller(object):
             start_date=self.clients.get(name).start_date,
             expiration_date=self.clients.get(name).expiration_date
         )
-        requests.post(self.clients.get(name).post_url, data=data, auth=self.auth)
+        post_url = '?{}'.format(self.clients.get(name).post_url, self.get_credentials())
+        requests.post(post_url, data=data)
+
+    def get_credentials(self):
+        credentials = []
+        for k, v in self.auth.items():
+            credentials.append('{}={}'.format(k, v))
+        return '&'.join(credentials)
