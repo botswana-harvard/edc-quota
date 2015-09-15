@@ -24,9 +24,6 @@ Add the `edc_quota` app to your project `settings`:
 	INSTALLED_APPS = (
 	...
 	'edc_quota', 
-    'edc_quota.client',
-    'edc_quota.controller',
-    'edc_quota.override',	
 	...
 	)
 
