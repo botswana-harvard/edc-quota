@@ -1,4 +1,4 @@
-from tastypie.resources import ModelResource
+from tastypie.resources import ModelResource, ALL
 from tastypie.authentication import ApiKeyAuthentication
 from tastypie.authorization import Authorization
 
@@ -15,8 +15,8 @@ class QuotaResource(ModelResource):
         list_allowed_methods = ['get', 'post']
         detail_allowed_methods = ['get', 'post', 'put']
         filtering = {
-            'app_label': ['exact'],
-            'model_name': ['iexact'],
+            'app_label': ALL,
+            'model_name': ALL,
         }
         authorization = Authorization()
         authentication = ApiKeyAuthentication()

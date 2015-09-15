@@ -179,7 +179,7 @@ class TestClient(TestCase):
         TestQuotaModel.objects.create()
         self.assertRaises(QuotaReachedError, TestQuotaModel.objects.create)
         TestQuotaModel.quota.set_quota(3, date.today(), date.today() + timedelta(days=1))
-        self.assertIsInstance(TestQuotaModel.objects.create(), TestQuotaModel)
+        TestQuotaModel.objects.create()
         self.assertRaises(QuotaReachedError, TestQuotaModel.objects.create)
 
     def test_decrease_quota(self):

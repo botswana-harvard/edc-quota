@@ -9,6 +9,7 @@ from edc_quota.client.models import QuotaMixin
 from edc_quota.controller.models import Client, ControllerQuotaHistory, ControllerQuota
 from edc_quota.controller.controller import Controller
 from collections import defaultdict
+from edc_quota.controller.exceptions import ControllerError
 
 
 tz = pytz.timezone(settings.TIME_ZONE)
@@ -109,7 +110,7 @@ class TestController(TestCase):
             start_date=date.today() - timedelta(days=2),
             expiration_date=date.today() - timedelta(days=1)
         )
-        with self.assertRaises(ControllerQuota.DoesNotExist):
+        with self.assertRaises(ControllerError):
             DummyController(quota)
 
     def test_target1(self):
