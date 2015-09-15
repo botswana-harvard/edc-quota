@@ -146,6 +146,6 @@ class Controller(object):
 
     def get_credentials(self):
         credentials = []
-        for k, v in self.auth.items:
+        for k, v in self.auth.items():
             credentials.append('{}={}'.format(k, v))
         return '&'.join(credentials)
