@@ -18,7 +18,6 @@ class Controller(object):
         controller = Controller(quota)
         controller.get_all()
         controller.post_all()
-
     from datetime import date, timedelta
     from edc_quota.controller.models import Client, ControllerQuota
     from edc_quota.controller.controller import Controller
@@ -27,7 +26,6 @@ class Controller(object):
     controller_quota = ControllerQuota(target=10, start_date=date.today(), expiration_date=date.today() + timedelta(days=1), app_label='bcpp_subject', model_name='PimaVl')
     controller_quota.id = 1
     controller = Controller(controller_quota, [client], username='edc_quota', api_key='a817fc214f81b0e1467039e2ac61acbf99db8d47')
-
     """
     def __init__(self, quota, clients=None, username=None, api_name=None, api_key=None):
         self.api_name = api_name or 'v1'
@@ -56,9 +54,13 @@ class Controller(object):
                 start_date=date.today(),
                 expiration_date=self.quota.expiration_date)
             if clients:
-                for client in clients:
-                    if client.is_active:
-                        self.register(client)
+                for hostname in clients:
+                    try:
+                        client = Client.objects.get(hostname=hostname)
+                        if client.is_active:
+                            self.register(client)
+                    except Client.DoesNotExist as e:
+                        pass
             else:
                 self.register_all()
         except (ControllerQuota.DoesNotExist, AttributeError) as e:
