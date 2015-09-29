@@ -145,11 +145,15 @@ class QuotaMixin(models.Model):
         if not self.id:
             quota = self.__class__.quota.get_quota()
             if not quota:
+                if self._meta.proxy:
+                    REPORT_DATETIME_ATTR = self._meta.proxy_for_model.REPORT_DATETIME_ATTR
+                else:
+                    REPORT_DATETIME_ATTR = self.REPORT_DATETIME_ATTR
                 raise QuotaNotSetOrExpiredError(
                     'Expected a valid quota for model \'{}\' using {} \'{}\'. Got None.'.format(
                         self.__class__._meta.verbose_name,
-                        self.REPORT_DATETIME_ATTR,
-                        getattr(self, self.REPORT_DATETIME_ATTR).strftime('%Y-%m-%d')))
+                        REPORT_DATETIME_ATTR,
+                        getattr(self, REPORT_DATETIME_ATTR).strftime('%Y-%m-%d')))
             try:
                 if quota.pk:
                     self.quota_pk = quota.pk
