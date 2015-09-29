@@ -11,7 +11,7 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
     name='edc-quota',
-    version='1.0.9',
+    version='1.0.10',
     author=u'erikvw',
     author_email='ew2789@@gmail.com',
     packages=find_packages(),
