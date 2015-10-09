@@ -137,7 +137,7 @@ class QuotaMixin(models.Model):
     REPORT_DATETIME_ATTR = 'report_datetime'
     QUOTA_REACHED_MESSAGE = 'Quota for model {} has been reached or exceeded. Got {} >= {}.'
 
-    quota_pk = models.CharField(max_length=36, null=True)
+    quota_pk = models.CharField(max_length=36, null=True, blank=True)
 
     request_code = models.CharField(max_length=10, null=True, editable=False)
 
