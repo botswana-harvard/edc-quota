@@ -1,12 +1,12 @@
 from datetime import date, timedelta
 from django.contrib.auth.models import User
-from tastypie.test import ResourceTestCase
 from tastypie.models import ApiKey
+from tastypie.test import ResourceTestCase
 
 from edc_quota.client.models import Quota as ClientQuota
-from edc_quota.controller.models import Client, ControllerQuota
 from edc_quota.controller.controller import Controller
 from edc_quota.controller.exceptions import ControllerError
+from edc_quota.controller.models import Client, ControllerQuota
 
 
 class TestResource(ResourceTestCase):

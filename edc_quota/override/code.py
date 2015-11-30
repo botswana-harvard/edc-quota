@@ -1,4 +1,4 @@
-from getresults_identifier import ShortIdentifier
+from edc_identifier import ShortIdentifier
 
 from .exceptions import CodeError
 

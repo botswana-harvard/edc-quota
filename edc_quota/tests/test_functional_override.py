@@ -1,10 +1,10 @@
-from datetime import date, timedelta
 import time
 
-from selenium import webdriver
-from django.test import LiveServerTestCase
-from selenium.webdriver.common.keys import Keys
+from datetime import date, timedelta
 from django.contrib.auth.models import User
+from django.test import LiveServerTestCase
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
 
 from ..override.code import Code
 

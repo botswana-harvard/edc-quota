@@ -43,7 +43,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'tastypie',
-    'getresults_identifier',
+    'edc_identifier',
     'edc_quota',
 )
 

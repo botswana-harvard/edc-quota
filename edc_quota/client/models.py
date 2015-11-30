@@ -4,7 +4,6 @@ from datetime import date
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.core.validators import MinValueValidator
 from django.db import models, IntegrityError, transaction
-
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
