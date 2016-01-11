@@ -1,4 +1,4 @@
-from edc_identifier import ShortIdentifier
+from edc_identifier.short_identifier import ShortIdentifier
 
 from .exceptions import CodeError
 
