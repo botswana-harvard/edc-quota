@@ -4,7 +4,7 @@ requests>=2.7.0
 requests-oauthlib>=0.5.0
 pytz
 # django-tastypie==0.12.2
--e git+https://github.com/django-tastypie/django-tastypie#egg=TastyPie
--e git+https://github.com/botswana-harvard/getresults-identifier@master#egg=getresults-identifier
+git+https://github.com/django-tastypie/django-tastypie#egg=TastyPie
+git+https://github.com/botswana-harvard/getresults-identifier@master#egg=getresults-identifier
 selenium
 factory_boy==2.4.1
