@@ -1,6 +1,7 @@
 import os
 
-from django.contrib.auth.models import make_password, Group, Permission, User
+from django.contrib.auth.models import Group, Permission, User
+from django.contrib.auth.hashers import make_password
 
 from tastypie.models import ApiKey
 

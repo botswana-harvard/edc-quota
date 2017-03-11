@@ -1,9 +1,9 @@
 from datetime import date, timedelta
 from django.test import TestCase
 
+from edc_quota.client.exceptions import QuotaReachedError
 from edc_quota.override.code import Code
 from edc_quota.override.override import SimpleOverride, Override
-from edc_quota.client.exceptions import QuotaReachedError
 
 from .test_client import TestQuotaModel
 
